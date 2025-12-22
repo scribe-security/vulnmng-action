@@ -18,6 +18,22 @@ class JsonFileIssueManager(IssueManagerBase):
     def _generate_id(self, cve_id: str, target: str) -> str:
         # Simple unique ID generation
         return f"{cve_id}::{target}"
+    
+    def _get_status_from_labels(self, labels: List[str]) -> Optional[str]:
+        """Extract status from labels. Returns the status:* label or None."""
+        status_labels = [l for l in labels if l.startswith("status:")]
+        if len(status_labels) > 1:
+            logger.error(f"Multiple status labels found: {status_labels}. Issue has invalid state.")
+            raise ValueError(f"Multiple status labels found: {status_labels}")
+        return status_labels[0] if status_labels else None
+    
+    def _ensure_single_status_label(self, labels: List[str], new_status: str) -> List[str]:
+        """Remove any existing status:* labels and add the new one."""
+        # Remove all status:* labels
+        labels = [l for l in labels if not l.startswith("status:")]
+        # Add new status
+        labels.append(new_status)
+        return labels
 
     def _load(self):
         self._issues = {}
@@ -40,6 +56,21 @@ class JsonFileIssueManager(IssueManagerBase):
                     scans_list = data.get("scans", [])
 
                 for item in issues_list:
+                    # Migration: if old schema has 'status' field, convert to label
+                    if "status" in item:
+                        old_status = item["status"]
+                        # Remove status field
+                        del item["status"]
+                        # Ensure status is in labels with new format
+                        if "labels" not in item:
+                            item["labels"] = []
+                        if not any(l.startswith("status:") for l in item["labels"]):
+                            # Convert old status to new label format
+                            if old_status in ["new", "false-positive", "fixed", "ignored", "triaged", "not-exploitable"]:
+                                item["labels"].append(f"status:{old_status}")
+                            else:
+                                item["labels"].append(VulnerabilityStatus.NEW.value)
+                    
                     issue = Issue(**item)
                     key = issue.id if issue.id else self._generate_id(issue.vulnerability.cve_id, issue.vulnerability.target)
                     self._issues[key] = issue
@@ -74,31 +105,28 @@ class JsonFileIssueManager(IssueManagerBase):
         if unique_id in self._issues:
              issue = self._issues[unique_id]
              # Update logic for existing issue
-             # 1. Sync labels: ensure status is present
-             if issue.status.value not in issue.labels:
-                 issue.labels.append(issue.status.value)
+             # 1. Ensure status label exists
+             if not self._get_status_from_labels(issue.labels):
+                 issue.labels.append(VulnerabilityStatus.NEW.value)
              
-             # 2. Merge details (Overwrite to remove stale/duplicate data from previous schema)
+             # 2. Overwrite details to remove stale/duplicate data
              if details:
                  issue.details = details
              
              return issue
         
-        # Ensure status is in labels
-        initial_status = VulnerabilityStatus.NEW
-        labels = [initial_status.value]
+        # Create new issue with status:new label
+        initial_labels = [VulnerabilityStatus.NEW.value]
              
         issue = Issue(
             id=unique_id,
             cve_id=vulnerability.cve_id,
             title=f"{vulnerability.cve_id} - {vulnerability.package_name}",
             vulnerability=vulnerability,
-            status=initial_status,
-            labels=labels,
+            labels=initial_labels,
             details=details
         )
         self._issues[unique_id] = issue
-        # self.save() # Optimization: Save only once at end
         return issue
         
     def record_scan(self, target: str, tool: str, vulnerability_count: int):
@@ -111,30 +139,31 @@ class JsonFileIssueManager(IssueManagerBase):
             status=status
         )
 
-    def update_issue_status(self, issue_id: str, status: str) -> Issue:
-        # Here issue_id is treated as cve_id for this simple manager
-        if issue_id in self._issues:
-            try:
-                issue = self._issues[issue_id]
-                old_status = issue.status
-                new_status = VulnerabilityStatus(status)
-                
-                # Update Status
-                issue.status = new_status
-                issue.updated_at = datetime.now()
-                
-                # Update Labels: Remove old status label, add new one
-                if old_status.value in issue.labels:
-                    issue.labels.remove(old_status.value)
-                if new_status.value not in issue.labels:
-                    issue.labels.append(new_status.value)
-
-                self._save()
-                return issue
-            except ValueError:
-                logger.error(f"Invalid status: {status}")
-                raise ValueError(f"Invalid status: {status}")
-        raise ValueError(f"Issue {issue_id} not found")
+    def update_issue_status(self, issue_id: str, new_status: str, comment: Optional[str] = None) -> Issue:
+        """Update issue status via labels. new_status should be in format 'status:*'."""
+        if issue_id not in self._issues:
+            raise ValueError(f"Issue {issue_id} not found")
+        
+        issue = self._issues[issue_id]
+        
+        # Validate new_status format
+        if not new_status.startswith("status:"):
+            raise ValueError(f"Status must be in format 'status:*', got: {new_status}")
+        
+        # Validate it's a known status
+        valid_statuses = [s.value for s in VulnerabilityStatus]
+        if new_status not in valid_statuses:
+            raise ValueError(f"Invalid status: {new_status}. Valid: {valid_statuses}")
+        
+        # Update labels
+        issue.labels = self._ensure_single_status_label(issue.labels, new_status)
+        issue.updated_at = datetime.now()
+        
+        # Update comment if provided
+        if comment:
+            issue.user_comment = comment
+        
+        return issue
         
     def get_all_issues(self) -> List[Issue]:
         return list(self._issues.values())

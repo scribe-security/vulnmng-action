@@ -2,14 +2,14 @@
   "scans": [
     {
       "target": "/scan_target",
-      "last_scan": "2025-12-22T18:24:04.970050",
+      "last_scan": "2025-12-22T19:46:45.761758",
       "tool": "grype",
       "vulnerability_count": 0,
       "status": "clean"
     },
     {
       "target": "registry:postgres:alpine",
-      "last_scan": "2025-12-22T18:25:36.149634",
+      "last_scan": "2025-12-22T19:48:57.581312",
       "tool": "grype",
       "vulnerability_count": 12,
       "status": "vulnerable"
@@ -20,12 +20,12 @@
       "id": "CVE-2025-61723::registry:postgres:alpine",
       "cve_id": "CVE-2025-61723",
       "title": "CVE-2025-61723 - stdlib",
-      "status": "new",
       "labels": [
-        "new"
+        "status:new"
       ],
-      "created_at": "2025-12-22T17:38:38.895456",
-      "updated_at": "2025-12-22T17:38:38.895459",
+      "user_comment": null,
+      "created_at": "2025-12-22T19:48:57.581158",
+      "updated_at": "2025-12-22T19:48:57.581161",
       "details": {
         "cisagov/vulnrichment": {
           "dataType": "CVE_RECORD",
@@ -198,12 +198,12 @@
       "id": "CVE-2025-61725::registry:postgres:alpine",
       "cve_id": "CVE-2025-61725",
       "title": "CVE-2025-61725 - stdlib",
-      "status": "new",
       "labels": [
-        "new"
+        "status:new"
       ],
-      "created_at": "2025-12-22T17:38:38.895477",
-      "updated_at": "2025-12-22T17:38:38.895478",
+      "user_comment": null,
+      "created_at": "2025-12-22T19:48:57.581172",
+      "updated_at": "2025-12-22T19:48:57.581172",
       "details": {
         "cisagov/vulnrichment": {
           "dataType": "CVE_RECORD",
@@ -388,12 +388,12 @@
       "id": "CVE-2025-58185::registry:postgres:alpine",
       "cve_id": "CVE-2025-58185",
       "title": "CVE-2025-58185 - stdlib",
-      "status": "new",
       "labels": [
-        "new"
+        "status:new"
       ],
-      "created_at": "2025-12-22T17:38:38.895483",
-      "updated_at": "2025-12-22T17:38:38.895484",
+      "user_comment": null,
+      "created_at": "2025-12-22T19:48:57.581178",
+      "updated_at": "2025-12-22T19:48:57.581178",
       "details": {
         "cisagov/vulnrichment": {
           "dataType": "CVE_RECORD",
@@ -569,12 +569,12 @@
       "id": "CVE-2025-58186::registry:postgres:alpine",
       "cve_id": "CVE-2025-58186",
       "title": "CVE-2025-58186 - stdlib",
-      "status": "new",
       "labels": [
-        "new"
+        "status:new"
       ],
-      "created_at": "2025-12-22T17:38:38.895487",
-      "updated_at": "2025-12-22T17:38:38.895487",
+      "user_comment": null,
+      "created_at": "2025-12-22T19:48:57.581181",
+      "updated_at": "2025-12-22T19:48:57.581182",
       "details": {
         "cisagov/vulnrichment": {
           "dataType": "CVE_RECORD",
@@ -789,12 +789,12 @@
       "id": "CVE-2025-61724::registry:postgres:alpine",
       "cve_id": "CVE-2025-61724",
       "title": "CVE-2025-61724 - stdlib",
-      "status": "new",
       "labels": [
-        "new"
+        "status:new"
       ],
-      "created_at": "2025-12-22T17:38:38.895491",
-      "updated_at": "2025-12-22T17:38:38.895492",
+      "user_comment": null,
+      "created_at": "2025-12-22T19:48:57.581185",
+      "updated_at": "2025-12-22T19:48:57.581185",
       "details": {
         "cisagov/vulnrichment": {
           "dataType": "CVE_RECORD",
@@ -964,12 +964,12 @@
       "id": "CVE-2025-47912::registry:postgres:alpine",
       "cve_id": "CVE-2025-47912",
       "title": "CVE-2025-47912 - stdlib",
-      "status": "new",
       "labels": [
-        "new"
+        "status:new"
       ],
-      "created_at": "2025-12-22T17:38:38.895503",
-      "updated_at": "2025-12-22T17:38:38.895503",
+      "user_comment": null,
+      "created_at": "2025-12-22T19:48:57.581283",
+      "updated_at": "2025-12-22T19:48:57.581284",
       "details": {
         "cisagov/vulnrichment": {
           "dataType": "CVE_RECORD",
@@ -1154,12 +1154,12 @@
       "id": "CVE-2025-58187::registry:postgres:alpine",
       "cve_id": "CVE-2025-58187",
       "title": "CVE-2025-58187 - stdlib",
-      "status": "new",
       "labels": [
-        "new"
+        "status:new"
       ],
-      "created_at": "2025-12-22T17:38:38.895507",
-      "updated_at": "2025-12-22T17:38:38.895507",
+      "user_comment": null,
+      "created_at": "2025-12-22T19:48:57.581288",
+      "updated_at": "2025-12-22T19:48:57.581289",
       "details": {
         "cisagov/vulnrichment": {
           "dataType": "CVE_RECORD",
@@ -1425,12 +1425,12 @@
       "id": "CVE-2025-58188::registry:postgres:alpine",
       "cve_id": "CVE-2025-58188",
       "title": "CVE-2025-58188 - stdlib",
-      "status": "new",
       "labels": [
-        "new"
+        "status:new"
       ],
-      "created_at": "2025-12-22T17:38:38.895510",
-      "updated_at": "2025-12-22T17:38:38.895511",
+      "user_comment": null,
+      "created_at": "2025-12-22T19:48:57.581291",
+      "updated_at": "2025-12-22T19:48:57.581294",
       "details": {
         "cisagov/vulnrichment": {
           "dataType": "CVE_RECORD",
@@ -1603,12 +1603,12 @@
       "id": "CVE-2025-61729::registry:postgres:alpine",
       "cve_id": "CVE-2025-61729",
       "title": "CVE-2025-61729 - stdlib",
-      "status": "new",
       "labels": [
-        "new"
+        "status:new"
       ],
-      "created_at": "2025-12-22T17:38:38.895514",
-      "updated_at": "2025-12-22T17:38:38.895515",
+      "user_comment": null,
+      "created_at": "2025-12-22T19:48:57.581297",
+      "updated_at": "2025-12-22T19:48:57.581297",
       "details": {
         "cisagov/vulnrichment": {
           "dataType": "CVE_RECORD",
@@ -1768,12 +1768,12 @@
       "id": "CVE-2025-58189::registry:postgres:alpine",
       "cve_id": "CVE-2025-58189",
       "title": "CVE-2025-58189 - stdlib",
-      "status": "new",
       "labels": [
-        "new"
+        "status:new"
       ],
-      "created_at": "2025-12-22T17:38:38.895519",
-      "updated_at": "2025-12-22T17:38:38.895519",
+      "user_comment": null,
+      "created_at": "2025-12-22T19:48:57.581300",
+      "updated_at": "2025-12-22T19:48:57.581300",
       "details": {
         "cisagov/vulnrichment": {
           "dataType": "CVE_RECORD",
@@ -1970,12 +1970,12 @@
       "id": "CVE-2025-58183::registry:postgres:alpine",
       "cve_id": "CVE-2025-58183",
       "title": "CVE-2025-58183 - stdlib",
-      "status": "new",
       "labels": [
-        "new"
+        "status:new"
       ],
-      "created_at": "2025-12-22T17:38:38.895522",
-      "updated_at": "2025-12-22T17:38:38.895522",
+      "user_comment": null,
+      "created_at": "2025-12-22T19:48:57.581303",
+      "updated_at": "2025-12-22T19:48:57.581303",
       "details": {
         "cisagov/vulnrichment": {
           "dataType": "CVE_RECORD",
@@ -2148,12 +2148,12 @@
       "id": "CVE-2025-61727::registry:postgres:alpine",
       "cve_id": "CVE-2025-61727",
       "title": "CVE-2025-61727 - stdlib",
-      "status": "new",
       "labels": [
-        "new"
+        "status:new"
       ],
-      "created_at": "2025-12-22T17:38:38.895526",
-      "updated_at": "2025-12-22T17:38:38.895526",
+      "user_comment": null,
+      "created_at": "2025-12-22T19:48:57.581306",
+      "updated_at": "2025-12-22T19:48:57.581306",
       "details": {
         "cisagov/vulnrichment": {
           "dataType": "CVE_RECORD",

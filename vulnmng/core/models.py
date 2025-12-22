@@ -12,11 +12,12 @@ class Severity(str, Enum):
     CRITICAL = "Critical"
 
 class VulnerabilityStatus(str, Enum):
-    NEW = "new"
-    FALSE_POSITIVE = "false-positive"
-    FIXED = "fixed"
-    IGNORED = "ignored"
-    TRIAGED = "triaged"
+    NEW = "status:new"
+    FALSE_POSITIVE = "status:false-positive"
+    NOT_EXPLOITABLE = "status:not-exploitable"
+    FIXED = "status:fixed"
+    IGNORED = "status:ignored"
+    TRIAGED = "status:triaged"
 
 class Vulnerability(BaseModel):
     cve_id: str
@@ -47,9 +48,9 @@ class Issue(BaseModel):
     id: Optional[str] = None # ID in the issue tracking system
     cve_id: str
     title: str
-    status: VulnerabilityStatus = VulnerabilityStatus.NEW
-    labels: List[str] = []
+    labels: List[str] = []  # Includes status:* labels
+    user_comment: Optional[str] = None  # User's explanation for status/triage
     created_at: datetime = Field(default_factory=datetime.now)
     updated_at: datetime = Field(default_factory=datetime.now)
-    details: Dict[str, Any] = {}
+    details: Dict[str, Any] = {}  # Enrichment data
     vulnerability: Vulnerability

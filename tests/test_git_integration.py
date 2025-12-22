@@ -117,7 +117,7 @@ class TestGitIntegration(unittest.TestCase):
         # Verify issue structure
         for issue in data["issues"]:
             self.assertIn("labels", issue)
-            self.assertIn("new", issue["labels"])
+            self.assertIn("status:new", issue["labels"])
             self.assertIn("details", issue)
             self.assertIn("cisagov/vulnrichment", issue["details"])
         
@@ -144,7 +144,7 @@ class TestGitIntegration(unittest.TestCase):
         
         # Verify the issues have correct structure
         for issue in retrieved_issues:
-            self.assertIn("new", issue.labels)
+            self.assertIn("status:new", issue.labels)
             self.assertIn("cisagov/vulnrichment", issue.details)
         
         # Verify scan metadata

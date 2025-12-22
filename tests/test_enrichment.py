@@ -28,9 +28,11 @@ class TestCisaEnrichment(unittest.TestCase):
         
         result = enhancer.enhance(vuln)
         
-        # Should populate description and score
-        self.assertEqual(result.description, "Enriched description")
-        self.assertEqual(result.cvss_score, 9.8)
+        # enhance() now returns the enrichment data dict
+        self.assertIsInstance(result, dict)
+        # But it also modifies the vulnerability in place
+        self.assertEqual(vuln.description, "Enriched description")
+        self.assertEqual(vuln.cvss_score, 9.8)
         
         # Verify URL construction logic
         # CVE-2024-12345 -> year 2024, id 12345 -> folder 12xxx
