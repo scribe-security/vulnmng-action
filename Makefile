@@ -1,17 +1,28 @@
 IMAGE_NAME := vulnmng:latest
+GHCR_IMAGE := ghcr.io/scribe-security/vulnmng:latest
 
-.PHONY: build test scan e2e
+.PHONY: build test scan e2e test-published scan-published e2e-published
 
 build:
 	docker build -t $(IMAGE_NAME) .
 
 test:
-	# Run unit tests (if any)
-	python -m unittest discover vulnmng
+	# Run unit tests locally
+	python -m unittest discover tests -v
+
+test-published:
+	# Pull and test using the published GHCR image
+	docker pull $(GHCR_IMAGE)
+	docker run --rm -v $(PWD):/workspace -w /workspace $(GHCR_IMAGE) python -m unittest discover tests -v
 
 scan:
 	# Example scan usage
 	docker run --rm -v $(PWD):/scan_target $(IMAGE_NAME) python -m vulnmng.cli scan /scan_target --report-md /scan_target/report.md
+
+scan-published:
+	# Scan using the published GHCR image
+	docker pull $(GHCR_IMAGE)
+	docker run --rm -v $(PWD):/scan_target $(GHCR_IMAGE) python -m vulnmng.cli scan /scan_target --json-path /scan_target/issues.json
 
 scan-self: build
 	# Scan the built image itself
@@ -24,3 +35,8 @@ report:
 
 e2e: build
 	./scripts/e2e_test.sh
+
+e2e-published:
+	# Run E2E tests using published GHCR image
+	docker pull $(GHCR_IMAGE)
+	IMAGE_NAME=$(GHCR_IMAGE) ./scripts/e2e_test.sh
