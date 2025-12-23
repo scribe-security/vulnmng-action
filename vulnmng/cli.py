@@ -23,6 +23,7 @@ def main():
     scan_parser.add_argument("--json-path", default="issues.json", help="Path to JSON file")
     scan_parser.add_argument("--git-root", help="Path to Git repository root. If set, enables Git integration.")
     scan_parser.add_argument("--git-branch", help="Git branch to use. Default: current branch.")
+    scan_parser.add_argument("--git-token", help="GitHub token for authentication. Can also use GITHUB_TOKEN env var.")
 
     # Report Command
     report_parser = subparsers.add_parser("report", help="Generate a report")
@@ -30,6 +31,9 @@ def main():
     report_parser.add_argument("--target", help="Filter report by target")
     report_parser.add_argument("--format-md", help="Path to generate Markdown report")
     report_parser.add_argument("--format-csv", help="Path to generate CSV report")
+    report_parser.add_argument("--git-root", help="Path to Git repository root. If set, enables Git integration.")
+    report_parser.add_argument("--git-branch", help="Git branch to use. Default: current branch.")
+    report_parser.add_argument("--git-token", help="GitHub token for authentication. Can also use GITHUB_TOKEN env var.")
 
     args = parser.parse_args()
 
@@ -40,7 +44,8 @@ def main():
         git_integration = None
         if args.git_root:
             logger.info("Git integration enabled.")
-            git_integration = GitIntegration(repo_path=args.git_root, branch=args.git_branch)
+            token = args.git_token or os.environ.get("GITHUB_TOKEN")
+            git_integration = GitIntegration(repo_path=args.git_root, branch=args.git_branch, token=token)
             if not git_integration.is_repo():
                  logger.error(f"{args.git_root} is not a valid git repository.")
                  sys.exit(1)
@@ -113,6 +118,19 @@ def main():
             logger.info("Git push completed.")
 
     elif args.command == "report":
+        # 0. Git Setup
+        git_integration = None
+        if args.git_root:
+            logger.info("Git integration enabled for report.")
+            token = args.git_token or os.environ.get("GITHUB_TOKEN")
+            git_integration = GitIntegration(repo_path=args.git_root, branch=args.git_branch, token=token)
+            if not git_integration.is_repo():
+                 logger.error(f"{args.git_root} is not a valid git repository.")
+                 sys.exit(1)
+            
+            git_integration.checkout_branch()
+            git_integration.pull()
+
         issue_manager = JsonFileIssueManager(file_path=args.json_path)
         all_issues = issue_manager.get_all_issues()
         scans = issue_manager.get_scans()
@@ -131,6 +149,22 @@ def main():
         if args.format_csv:
             reporter.generate_csv(args.format_csv)
             logger.info(f"CSV report ready: {args.format_csv}")
+
+        # 5. Git Commit & Push
+        if git_integration:
+            # Add the reports and the JSON file
+            files_to_add = [os.path.abspath(args.json_path)]
+            if args.format_md:
+                files_to_add.append(os.path.abspath(args.format_md))
+            if args.format_csv:
+                files_to_add.append(os.path.abspath(args.format_csv))
+            
+            for f in files_to_add:
+                git_integration.add(f)
+            
+            git_integration.commit(f"Update vulnerability reports [skip ci]")
+            git_integration.push()
+            logger.info("Git push completed.")
 
     else:
         parser.print_help()

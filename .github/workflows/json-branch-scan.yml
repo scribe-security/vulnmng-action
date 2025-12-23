@@ -33,13 +33,10 @@ jobs:
         docker run --rm \
           -v $(pwd):/workspace \
           -w /workspace \
+          -e GITHUB_TOKEN=${{ secrets.GITHUB_TOKEN }} \
           ghcr.io/${{ github.repository }}:latest \
           sh -c "git config --global --add safe.directory /workspace && \
                  python -m vulnmng.cli scan '${{ github.event.inputs.target }}' \
                  --json-path /workspace/issues.json \
                  --git-root /workspace \
                  --git-branch json-issues"
-    
-    - name: Push changes to json-issues branch
-      run: |
-        git push origin json-issues

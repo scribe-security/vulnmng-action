@@ -18,47 +18,30 @@ jobs:
     steps:
     - uses: actions/checkout@v4
       with:
-        ref: json-issues
+        fetch-depth: 0
     
     - name: Configure Git
       run: |
         git config user.name "github-actions[bot]"
         git config user.email "github-actions[bot]@users.noreply.github.com"
     
-    - name: Set up Python 3.13
-      uses: actions/setup-python@v5
-      with:
-        python-version: "3.13"
+    - name: Pull published image
+      run: docker pull ghcr.io/${{ github.repository }}:latest
     
-    - name: Install Dependencies
+    - name: Generate Reports and push to json-issues branch
       run: |
-        python -m pip install --upgrade pip
-        pip install pydantic requests
-    
-    - name: Generate Reports
-      run: |
-        if [ -n "${{ github.event.inputs.target }}" ]; then
-          python -m vulnmng.cli report \
-            --json-path issues.json \
-            --target "${{ github.event.inputs.target }}" \
-            --format-md report.md \
-            --format-csv report.csv
-        else
-          python -m vulnmng.cli report \
-            --json-path issues.json \
-            --format-md report.md \
-            --format-csv report.csv
-        fi
-    
-    - name: Commit Reports to json-issues branch
-      run: |
-        git add report.md report.csv
-        if git diff --staged --quiet; then
-          echo "No changes to commit"
-        else
-          git commit -m "chore: Update vulnerability reports [skip ci]"
-          git push origin json-issues
-        fi
+        docker run --rm \
+          -v $(pwd):/workspace \
+          -w /workspace \
+          -e GITHUB_TOKEN=${{ secrets.GITHUB_TOKEN }} \
+          ghcr.io/${{ github.repository }}:latest \
+          sh -c "git config --global --add safe.directory /workspace && \
+                 python -m vulnmng.cli report \
+                 --json-path /workspace/issues.json \
+                 --format-md /workspace/report.md \
+                 --format-csv /workspace/report.csv \
+                 --git-root /workspace \
+                 --git-branch json-issues"
     
     - name: Upload Reports as Artifacts
       uses: actions/upload-artifact@v4

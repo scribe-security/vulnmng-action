@@ -1,14 +1,16 @@
 import subprocess
 import logging
 import os
+import base64
 from typing import Optional
 
 logger = logging.getLogger(__name__)
 
 class GitIntegration:
-    def __init__(self, repo_path: str = ".", branch: Optional[str] = None):
+    def __init__(self, repo_path: str = ".", branch: Optional[str] = None, token: Optional[str] = None):
         self.repo_path = repo_path
         self.branch = branch
+        self.token = token
 
     def _run_git(self, args: list) -> bool:
         try:
@@ -100,6 +102,30 @@ class GitIntegration:
 
     def push(self):
         args = ["push"]
+        
+        # If token is provided, use http.extraHeader for authentication
+        if self.token:
+            # Format: Authorization: Basic base64(x-access-token:TOKEN)
+            auth_str = f"x-access-token:{self.token}"
+            encoded_auth = base64.b64encode(auth_str.encode()).decode()
+            # We insert the -c flag right after 'git'
+            # But our _run_git appends args to ["git"]
+            # So we better modify _run_git or pass it differently.
+            # Let's modify push to use a custom git command if token is present.
+            
+            auth_header = f"AUTHORIZATION: basic {encoded_auth}"
+            # git -c http.extraHeader="auth" push ...
+            # Actually, let's just use the remote URL rewrite for simplicity in _run_git
+            # or pass the config flag.
+            
+            # Re-implementing push logic with the extra header config
+            push_args = ["-c", f"http.extraHeader={auth_header}", "push"]
+            if self.branch:
+                push_args.extend(["-u", "origin", self.branch])
+            
+            self._run_git(push_args)
+            return
+
         if self.branch:
              # Set upstream if needed
              args.extend(["-u", "origin", self.branch])
