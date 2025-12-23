@@ -34,10 +34,11 @@ jobs:
           -v $(pwd):/workspace \
           -w /workspace \
           ghcr.io/${{ github.repository }}:latest \
-          python -m vulnmng.cli scan "${{ github.event.inputs.target }}" \
-          --json-path /workspace/issues.json \
-          --git-root /workspace \
-          --git-branch json-issues
+          sh -c "git config --global --add safe.directory /workspace && \
+                 python -m vulnmng.cli scan '${{ github.event.inputs.target }}' \
+                 --json-path /workspace/issues.json \
+                 --git-root /workspace \
+                 --git-branch json-issues"
     
     - name: Push changes to json-issues branch
       run: |
