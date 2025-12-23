@@ -156,7 +156,7 @@ class TestGitIntegration(unittest.TestCase):
         
         git_integration = GitIntegration(repo_path=self.repo_path, branch="vulnmanage-data")
         
-        # Initially on main branch
+        # Initially on default branch (main or master depending on git version)
         result = subprocess.run(
             ["git", "branch", "--show-current"],
             cwd=self.repo_path,
@@ -164,7 +164,8 @@ class TestGitIntegration(unittest.TestCase):
             text=True,
             check=True
         )
-        self.assertEqual(result.stdout.strip(), "main")
+        default_branch = result.stdout.strip()
+        self.assertIn(default_branch, ["main", "master"])
         
         # Checkout the branch (should create it)
         git_integration.checkout_branch()
