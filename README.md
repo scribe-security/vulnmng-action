@@ -25,7 +25,7 @@ docker run --rm \
 ```
 
 ### 2. Git-Integrated Scan
-Use this to automatically pull, commit, and push scan results to a specific Git branch (e.g., `json-issues`). This requires a `GITHUB_TOKEN` for authenticated pushes.
+Use this to automatically pull, commit, and push scan results to a specific Git branch (e.g., `json-issues`).
 
 ```bash
 docker run --rm \
@@ -38,10 +38,31 @@ docker run --rm \
   --git-branch json-issues
 ```
 
-### 3. Generating Reports
-Generate Markdown and CSV reports from the stored issues.
+### 3. Repository Scanning with Custom Name
+When scanning a local repository, the tool automatically detects the repository name. You can also override it with `--target-name`.
 
-**Local storage example:**
+**Scan current directory (automatically named):**
+```bash
+docker run --rm \
+  -v $(pwd):/workspace \
+  -w /workspace \
+  ghcr.io/scribe-security/vulnmng:latest \
+  scan /workspace
+```
+
+**Scan with custom target name:**
+```bash
+docker run --rm \
+  -v $(pwd):/workspace \
+  -w /workspace \
+  ghcr.io/scribe-security/vulnmng:latest \
+  scan /workspace --target-name "MyCoolRepo"
+```
+
+### 4. Generating Reports
+Generate reports from all issues, or filter by a specific target name.
+
+**Generate all reports:**
 ```bash
 docker run --rm \
   -v $(pwd):/workspace \
@@ -49,22 +70,19 @@ docker run --rm \
   ghcr.io/scribe-security/vulnmng:latest \
   report \
   --json-path /workspace/issues.json \
-  --format-md /workspace/report.md \
-  --format-csv /workspace/report.csv
+  --format-md /workspace/report.md
 ```
 
-**Git-integrated example (commits reports back to branch):**
+**Generate report for a specific target name:**
 ```bash
 docker run --rm \
   -v $(pwd):/workspace \
   -w /workspace \
-  -e GITHUB_TOKEN=$GITHUB_TOKEN \
   ghcr.io/scribe-security/vulnmng:latest \
   report \
-  --git-root /workspace \
-  --git-branch json-issues \
-  --format-md /workspace/report.md \
-  --format-csv /workspace/report.csv
+  --json-path /workspace/issues.json \
+  --target-name "MyCoolRepo" \
+  --format-md /workspace/target-report.md
 ```
 
 ---
@@ -75,6 +93,7 @@ docker run --rm \
 | Flag | Description |
 |------|-------------|
 | `target` | (Positional) Path to scan or image (e.g., `registry:name:tag`) |
+| `--target-name` | Human-readable identifier for the scan (e.g. `frontend-app`). Defaults to repo name or image name. |
 | `--json-path` | Path to save/read the issues database (default: `issues.json`) |
 | `--git-root` | Path to the Git repository root (enables Git integration) |
 | `--git-branch` | Target branch for storing findings (e.g., `json-issues`) |
@@ -84,7 +103,8 @@ docker run --rm \
 | Flag | Description |
 |------|-------------|
 | `--json-path` | Path to the issues database |
-| `--target` | Optional filter to report only on a specific scan target |
+| `--target` | Filter report by exact target path/image string |
+| `--target-name` | Filter report by the human-readable target name |
 | `--format-md` | Path to generate a Markdown report |
 | `--format-csv` | Path to generate a CSV report |
 | `--git-root` | Path to Git root (commits/pushes reports if set) |
@@ -105,16 +125,6 @@ The system strictly enforces a "one status per issue" rule via labels prefixed w
 - `status:fixed`: Finding has been patched.
 - `status:ignored`: No action required.
 - `status:triaged`: Acknowledged but awaiting further action.
-
-### Example Triage
-```json
-{
-  "id": "CVE-2024-1234::my-app",
-  "labels": ["status:false-positive"],
-  "user_comment": "This component is not used in production."
-}
-```
-*Subsequent scans will preserve these overrides.*
 
 ---
 

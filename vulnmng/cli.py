@@ -24,6 +24,7 @@ def main():
     scan_parser.add_argument("--git-root", help="Path to Git repository root. If set, enables Git integration.")
     scan_parser.add_argument("--git-branch", help="Git branch to use. Default: current branch.")
     scan_parser.add_argument("--git-token", help="GitHub token for authentication. Can also use GITHUB_TOKEN env var.")
+    scan_parser.add_argument("--target-name", help="Human-readable name for the scan target.")
 
     # Report Command
     report_parser = subparsers.add_parser("report", help="Generate a report")
@@ -34,6 +35,7 @@ def main():
     report_parser.add_argument("--git-root", help="Path to Git repository root. If set, enables Git integration.")
     report_parser.add_argument("--git-branch", help="Git branch to use. Default: current branch.")
     report_parser.add_argument("--git-token", help="GitHub token for authentication. Can also use GITHUB_TOKEN env var.")
+    report_parser.add_argument("--target-name", help="Filter report by target name")
 
     args = parser.parse_args()
 
@@ -57,6 +59,41 @@ def main():
         # 1. Scan
         scanner = GrypeScanner()
         scan_result = scanner.scan(args.target)
+        
+        # 1.1 Handle Target Name defaulting
+        target_name = args.target_name
+        if not target_name:
+            if ":" in args.target and not os.path.exists(args.target):
+                # Looks like a docker image (registry:image:tag)
+                target_name = args.target
+            else:
+                # Looks like a path
+                abs_target = os.path.abspath(args.target)
+                target_name = os.path.basename(abs_target)
+                
+                # Check if it's a git repo to get a better name
+                try:
+                    import subprocess
+                    # Try to get remote origin URL
+                    result = subprocess.run(
+                        ["git", "remote", "get-url", "origin"],
+                        cwd=abs_target,
+                        capture_output=True,
+                        text=True
+                    )
+                    if result.returncode == 0:
+                        repo_url = result.stdout.strip()
+                        # Extract repo name from URL (e.g., https://github.com/user/repo_name.git)
+                        target_name = repo_url.split("/")[-1].replace(".git", "")
+                except Exception:
+                    pass # Fallback to basename is fine
+        
+        logger.info(f"Using target name: {target_name}")
+        # Update vulnerabilities and scan result with target_name
+        scan_result.target_name = target_name
+        for v in scan_result.vulnerabilities:
+            v.target_name = target_name
+
         logger.info(f"Found {len(scan_result.vulnerabilities)} vulnerabilities")
 
         # 2. Enrich
@@ -95,7 +132,7 @@ def main():
             issues.append(issue)
         
         # Record Scan Metadata
-        issue_manager.record_scan(args.target, "grype", len(issues))
+        issue_manager.record_scan(args.target, "grype", len(issues), target_name=target_name)
         
         # Explicit save
         issue_manager.save()
@@ -137,10 +174,15 @@ def main():
         all_issues = issue_manager.get_all_issues()
         scans = issue_manager.get_scans()
         
-        # Filter by target if requested
+        # Filter by target PATH if requested
         if args.target:
             all_issues = [i for i in all_issues if i.vulnerability.target == args.target]
             scans = [s for s in scans if s.target == args.target]
+        
+        # Filter by target NAME if requested
+        if args.target_name:
+            all_issues = [i for i in all_issues if i.vulnerability.target_name == args.target_name]
+            scans = [s for s in scans if s.target_name == args.target_name]
             
         reporter = ReportGenerator(all_issues, scans)
         
