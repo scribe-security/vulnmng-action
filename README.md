@@ -1,80 +1,126 @@
 # Vulnmng: Vulnerability Management System
 
-A CLI tool to scan for vulnerabilities, manage them as issues, and enrich them with external intelligence.
+`vulnmng` is a comprehensive Vulnerability Management System (VMS) CLI tool. It automates the lifecycle of vulnerability detection and management by:
+1. **Scanning**: Detecting vulnerabilities in source code or container images using `Grype`.
+2. **Enriching**: Fetching contextual intelligence (like CISA Vulnrichment) to prioritize findings.
+3. **Managing**: Storing and tracking vulnerabilities as "issues" with state persistence.
+4. **Automating**: Integrating directly with Git branches for persistent storage and CI/CD reporting.
 
-## Features
-- **Scan**: Wraps `grype` to scan source code or container images.
-- **Enrich**: Fetches CISA Vulnrichment data (CVSS, descriptions, etc.).
-- **Manage**: Tracks issues in `vulnerabilities.json` (or GitHub - future).
-- **Report**: Markdown and CSV support.
+---
 
-## Installation
-Build the Docker image:
+## Usage with Docker
+
+All examples below use the public Docker image: `ghcr.io/scribe-security/vulnmng:latest`.
+
+### 1. Basic Scan (Local File Storage)
+Use this if you want to store and manage `issues.json` in your local directory.
+
 ```bash
-make build
+docker run --rm \
+  -v $(pwd):/workspace \
+  -w /workspace \
+  ghcr.io/scribe-security/vulnmng:latest \
+  python -m vulnmng.cli scan "registry:postgres:alpine" \
+  --json-path /workspace/issues.json
 ```
 
-## Usage
+### 2. Git-Integrated Scan
+Use this to automatically pull, commit, and push scan results to a specific Git branch (e.g., `json-issues`). This requires a `GITHUB_TOKEN` for authenticated pushes.
 
-### Scanning a Directory
 ```bash
-make scan
+docker run --rm \
+  -v $(pwd):/workspace \
+  -w /workspace \
+  -e GITHUB_TOKEN=$GITHUB_TOKEN \
+  ghcr.io/scribe-security/vulnmng:latest \
+  sh -c "git config --global --add safe.directory /workspace && \
+         python -m vulnmng.cli scan 'registry:postgres:alpine' \
+         --git-root /workspace \
+         --git-branch json-issues"
 ```
-Or manually:
+
+### 3. Generating Reports
+Generate Markdown and CSV reports from the stored issues.
+
+**Local storage example:**
 ```bash
-docker run --rm -v $(pwd):/target vulnmng:latest python -m vulnmng.cli scan /target
+docker run --rm \
+  -v $(pwd):/workspace \
+  -w /workspace \
+  ghcr.io/scribe-security/vulnmng:latest \
+  python -m vulnmng.cli report \
+  --json-path /workspace/issues.json \
+  --format-md /workspace/report.md \
+  --format-csv /workspace/report.csv
 ```
 
-### Scanning a Docker Image
-To scan a remote image (e.g., `postgres:alpine`):
+**Git-integrated example (commits reports back to branch):**
 ```bash
-docker run --rm vulnmng:latest python -m vulnmng.cli scan "registry:postgres:alpine"
+docker run --rm \
+  -v $(pwd):/workspace \
+  -w /workspace \
+  -e GITHUB_TOKEN=$GITHUB_TOKEN \
+  ghcr.io/scribe-security/vulnmng:latest \
+  sh -c "git config --global --add safe.directory /workspace && \
+         python -m vulnmng.cli report \
+         --git-root /workspace \
+         --git-branch json-issues \
+         --format-md /workspace/report.md \
+         --format-csv /workspace/report.csv"
 ```
-*Note: This requires network access from the container.*
 
-### Issue Management & JSON
-The system stores issues in `issues.json` in the current directory (mapped volume).
-Each issue has a unique ID composed of `CVE::Target`.
+---
 
-**Status Management via Labels**:
-Issues use labels to track their status. The status is stored as a label in the format `status:<value>`.
+## CLI Reference
 
-Valid status labels:
-- `status:new` (default for new findings)
-- `status:false-positive`
-- `status:not-exploitable`
-- `status:fixed`
-- `status:ignored`
-- `status:triaged`
+### `scan` Command
+| Flag | Description |
+|------|-------------|
+| `target` | (Positional) Path to scan or image (e.g., `registry:name:tag`) |
+| `--json-path` | Path to save/read the issues database (default: `issues.json`) |
+| `--git-root` | Path to the Git repository root (enables Git integration) |
+| `--git-branch` | Target branch for storing findings (e.g., `json-issues`) |
+| `--git-token` | GitHub token for pushes (can also use `GITHUB_TOKEN` env) |
 
-**Manual Triage**:
-You can manually edit `issues.json` to update the status and add comments:
+### `report` Command
+| Flag | Description |
+|------|-------------|
+| `--json-path` | Path to the issues database |
+| `--target` | Optional filter to report only on a specific scan target |
+| `--format-md` | Path to generate a Markdown report |
+| `--format-csv` | Path to generate a CSV report |
+| `--git-root` | Path to Git root (commits/pushes reports if set) |
+| `--git-branch` | Branch to commit reports to |
 
-1. **Update Status**: Find the issue and modify the `labels` array:
-   ```json
-   "labels": ["status:false-positive"]
-   ```
-   **Important**: Each issue must have exactly ONE `status:*` label. Multiple status labels will cause an error during reporting.
+---
 
-2. **Add User Comment**: Add or update the `user_comment` field to explain your triage decision:
-   ```json
-   "user_comment": "This vulnerability does not affect our usage of the library"
-   ```
+## Triage & Status Management
 
-Example issue after triage:
+Issues are tracked in `issues.json`. You can manually triage findings by updating the `labels` and `user_comment` fields.
+
+### Status Labels
+The system strictly enforces a "one status per issue" rule via labels prefixed with `status:`.
+
+- `status:new`: Default for newly discovered vulnerabilities.
+- `status:false-positive`: Manually identified as not a bug.
+- `status:not-exploitable`: Vulnerability exists but cannot be reached.
+- `status:fixed`: Finding has been patched.
+- `status:ignored`: No action required.
+- `status:triaged`: Acknowledged but awaiting further action.
+
+### Example Triage
 ```json
 {
   "id": "CVE-2024-1234::my-app",
-  "cve_id": "CVE-2024-1234",
-  "title": "CVE-2024-1234 - vulnerable-package",
   "labels": ["status:false-positive"],
-  "user_comment": "Not exploitable in our configuration",
-  "vulnerability": { ... }
+  "user_comment": "This component is not used in production."
 }
 ```
+*Subsequent scans will preserve these overrides.*
 
-Re-running the scan will preserve your status labels and comments.
+---
 
 ## Development
-- **Tests**: `make test`
-- **E2E**: `make e2e`
+- **Build**: `make build`
+- **Unit Tests**: `make test`
+- **E2E Tests**: `make e2e`
