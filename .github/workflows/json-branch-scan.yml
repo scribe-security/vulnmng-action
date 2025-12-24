@@ -35,7 +35,7 @@ jobs:
           -w /workspace \
           -e GITHUB_TOKEN=${{ secrets.GITHUB_TOKEN }} \
           ghcr.io/${{ github.repository }}:latest \
-          python -m vulnmng.cli scan '${{ github.event.inputs.target }}' \
+          scan '${{ github.event.inputs.target }}' \
           --json-path /workspace/issues.json \
           --git-root /workspace \
           --git-branch json-issues

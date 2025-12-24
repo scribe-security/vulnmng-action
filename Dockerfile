@@ -21,4 +21,4 @@ COPY vulnmng /app/vulnmng
 ENV PYTHONPATH=/app
 
 # Entrypoint
-CMD ["python", "-m", "vulnmng.cli"]
+ENTRYPOINT ["python", "-m", "vulnmng.cli"]

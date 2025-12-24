@@ -35,7 +35,7 @@ jobs:
           -w /workspace \
           -e GITHUB_TOKEN=${{ secrets.GITHUB_TOKEN }} \
           ghcr.io/${{ github.repository }}:latest \
-          python -m vulnmng.cli report \
+          report \
           --json-path /workspace/issues.json \
           --format-md /workspace/report.md \
           --format-csv /workspace/report.csv \

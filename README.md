@@ -20,7 +20,7 @@ docker run --rm \
   -v $(pwd):/workspace \
   -w /workspace \
   ghcr.io/scribe-security/vulnmng:latest \
-  python -m vulnmng.cli scan "registry:postgres:alpine" \
+  scan "registry:postgres:alpine" \
   --json-path /workspace/issues.json
 ```
 
@@ -33,7 +33,7 @@ docker run --rm \
   -w /workspace \
   -e GITHUB_TOKEN=$GITHUB_TOKEN \
   ghcr.io/scribe-security/vulnmng:latest \
-  python -m vulnmng.cli scan "registry:postgres:alpine" \
+  scan "registry:postgres:alpine" \
   --git-root /workspace \
   --git-branch json-issues
 ```
@@ -47,7 +47,7 @@ docker run --rm \
   -v $(pwd):/workspace \
   -w /workspace \
   ghcr.io/scribe-security/vulnmng:latest \
-  python -m vulnmng.cli report \
+  report \
   --json-path /workspace/issues.json \
   --format-md /workspace/report.md \
   --format-csv /workspace/report.csv
@@ -60,7 +60,7 @@ docker run --rm \
   -w /workspace \
   -e GITHUB_TOKEN=$GITHUB_TOKEN \
   ghcr.io/scribe-security/vulnmng:latest \
-  python -m vulnmng.cli report \
+  report \
   --git-root /workspace \
   --git-branch json-issues \
   --format-md /workspace/report.md \
