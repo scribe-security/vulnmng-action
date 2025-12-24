@@ -1,0 +1,40 @@
+name: Test vulnmng Action
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+  workflow_dispatch:
+
+jobs:
+  test-action:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Build Base Image
+        run: |
+          docker build -t ghcr.io/scribe-security/vulnmng:latest .
+
+      - name: Run Scan Action (Self-Test)
+        uses: ./actions/vulnmng
+        with:
+          command: 'scan'
+          target: '.'
+          target-name: 'monorepo-test'
+          # We don't fail here yet to ensure reports are generated
+          fail-on: 'Critical' 
+
+      - name: Run Report Action
+        uses: ./actions/vulnmng
+        with:
+          command: 'report'
+          format-md: 'test-report.md'
+          format-csv: 'test-report.csv'
+
+      - name: Check Reports
+        run: |
+          ls -l test-report.md test-report.csv issues.json
+          grep "monorepo-test" issues.json
