@@ -12,7 +12,7 @@ class GitIntegration:
         self.branch = branch
         self.token = token
 
-    def _run_git(self, args: list) -> bool:
+    def _run_git(self, args: list, raise_error: bool = False) -> bool:
         try:
             cmd = ["git"] + args
             logger.info(f"Running git command: {' '.join(cmd)}")
@@ -28,6 +28,8 @@ class GitIntegration:
             return True
         except subprocess.CalledProcessError as e:
             logger.error(f"Git command failed: {e.stderr}")
+            if raise_error:
+                raise
             return False
 
     def ensure_safe_directory(self):
@@ -58,27 +60,17 @@ class GitIntegration:
         if not self.branch:
             return
         
-        # Check if branch exists locally using git branch --list
-        try:
-            result = subprocess.run(
-                ["git", "branch", "--list", self.branch],
-                cwd=self.repo_path,
-                capture_output=True,
-                text=True,
-                check=True
-            )
-            branch_exists = bool(result.stdout.strip())
-        except subprocess.CalledProcessError:
-            branch_exists = False
-        
-        if branch_exists:
-            # Branch exists, just checkout
-            logger.info(f"Checking out existing branch {self.branch}")
-            self._run_git(["checkout", self.branch])
-        else:
-            # Branch doesn't exist, create it
-            logger.info(f"Creating new branch {self.branch}")
-            self._run_git(["checkout", "-b", self.branch])
+        # Try checking out the branch directly.
+        # If it exists locally OR on origin (modern git will auto-track), this works.
+        logger.info(f"Attempting to checkout branch: {self.branch}")
+        if self._run_git(["checkout", self.branch]):
+            return
+            
+        # If it failed, it might truly be a new branch
+        logger.info(f"Branch {self.branch} not found locally or on origin. Creating it.")
+        if not self._run_git(["checkout", "-b", self.branch]):
+            logger.error(f"Failed to create branch {self.branch}")
+            # We don't raise here yet, but we should probably inform the CLI
 
     def pull(self):
         # Try to pull, but don't fail if there's no upstream (new branch)
@@ -144,10 +136,11 @@ class GitIntegration:
             if self.branch:
                 push_args.extend(["-u", "origin", self.branch])
             
-            self._run_git(push_args)
+            # Raise error on push failure so it's visible in CI/CD
+            self._run_git(push_args, raise_error=True)
             return
 
         if self.branch:
              # Set upstream if needed
              args.extend(["-u", "origin", self.branch])
-        self._run_git(args)
+        self._run_git(args, raise_error=True)
