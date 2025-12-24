@@ -12,20 +12,17 @@ echo "Running E2E Test..."
 docker run --rm \
     -v $(pwd):/scan_target \
     -v $(pwd):/app/output \
-    $IMAGE_NAME python -m vulnmng.cli scan /scan_target --json-path /app/output/issues.json
+    $IMAGE_NAME scan /scan_target --json-path /app/output/issues.json
 
-# 1.1 Run Scan against a public docker image (needs docker socket if grype uses docker daemon, or grype can pull if it has net access)
-# Note: For this to work in dind, we need to handle docker socket. 
-# Simplification: Grype can inspect a tarball or remote Registry if network is available.
-# We will assume network access for "postgres:alpine"
+# 1.1 Run Scan against a public docker image
 docker run --rm \
     -v $(pwd):/app/output \
-    $IMAGE_NAME python -m vulnmng.cli scan "registry:postgres:alpine" --json-path /app/output/issues.json
+    $IMAGE_NAME scan "registry:postgres:alpine" --json-path /app/output/issues.json
 
 # 1.2 Generate Report
 docker run --rm \
     -v $(pwd):/app/output \
-    $IMAGE_NAME python -m vulnmng.cli report --json-path /app/output/issues.json --format-md /app/output/report.md --format-csv /app/output/report.csv
+    $IMAGE_NAME report --json-path /app/output/issues.json --format-md /app/output/report.md --format-csv /app/output/report.csv
 
 
 # 2. Verify Outputs

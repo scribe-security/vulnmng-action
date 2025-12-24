@@ -129,10 +129,11 @@ class JsonFileIssueManager(IssueManagerBase):
         self._issues[unique_id] = issue
         return issue
         
-    def record_scan(self, target: str, tool: str, vulnerability_count: int):
+    def record_scan(self, target: str, tool: str, vulnerability_count: int, target_name: Optional[str] = None):
         status = "clean" if vulnerability_count == 0 else "vulnerable"
         self._scans[target] = ScanMetadata(
             target=target,
+            target_name=target_name,
             last_scan=datetime.now(),
             tool=tool,
             vulnerability_count=vulnerability_count,

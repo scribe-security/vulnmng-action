@@ -2,14 +2,14 @@
   "scans": [
     {
       "target": "/scan_target",
-      "last_scan": "2025-12-22T19:46:45.761758",
+      "last_scan": "2025-12-23T06:00:20.504189",
       "tool": "grype",
       "vulnerability_count": 0,
       "status": "clean"
     },
     {
       "target": "registry:postgres:alpine",
-      "last_scan": "2025-12-22T19:48:57.581312",
+      "last_scan": "2025-12-23T06:01:45.662501",
       "tool": "grype",
       "vulnerability_count": 12,
       "status": "vulnerable"
@@ -21,9 +21,9 @@
       "cve_id": "CVE-2025-61723",
       "title": "CVE-2025-61723 - stdlib",
       "labels": [
-        "status:new"
+        "status:false-positive"
       ],
-      "user_comment": null,
+      "user_comment": "The vulnerability does not exist in version actually used",
       "created_at": "2025-12-22T19:48:57.581158",
       "updated_at": "2025-12-22T19:48:57.581161",
       "details": {

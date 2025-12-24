@@ -49,16 +49,16 @@ class ReportGenerator:
             # Scans Table
             if self.scans:
                 f.write("## Scans\n")
-                f.write("| Target | Last Scan | Tool | Issues Found | Status |\n")
-                f.write("|---|---|---|---|---|\n")
+                f.write("| Target | Target Name | Last Scan | Tool | Issues Found | Status |\n")
+                f.write("|---|---|---|---|---|---|\n")
                 for scan in self.scans:
-                    f.write(f"| {scan.target} | {scan.last_scan.isoformat()} | {scan.tool} | {scan.vulnerability_count} | {scan.status} |\n")
+                    f.write(f"| {scan.target} | {scan.target_name or 'N/A'} | {scan.last_scan.isoformat()} | {scan.tool} | {scan.vulnerability_count} | {scan.status} |\n")
                 f.write("\n")
             
             # Table
             f.write("## Vulnerabilities\n")
-            f.write("| Target | CVE ID | Package | Version | Severity | Status | Fix Version | User Comment | Description |\n")
-            f.write("|---|---|---|---|---|---|---|---|---|\n")
+            f.write("| Target | Target Name | CVE ID | Package | Version | Severity | Status | Fix Version | User Comment | Description |\n")
+            f.write("|---|---|---|---|---|---|---|---|---|---|\n")
             
             # Sort by status (new first), then Severity
             sorted_issues = sorted(self.issues, key=lambda x: (
@@ -71,10 +71,10 @@ class ReportGenerator:
                 status = self._get_status_from_labels(issue.labels)
                 desc = (v.description[:80] + '...') if v.description and len(v.description) > 80 else (v.description or "")
                 comment = (issue.user_comment[:50] + '...') if issue.user_comment and len(issue.user_comment) > 50 else (issue.user_comment or "")
-                f.write(f"| {v.target} | {v.cve_id} | {v.package_name} | {v.version} | {v.severity.value} | {status} | {v.fix_version or 'N/A'} | {comment} | {desc} |\n")
+                f.write(f"| {v.target} | {v.target_name or 'N/A'} | {v.cve_id} | {v.package_name} | {v.version} | {v.severity.value} | {status} | {v.fix_version or 'N/A'} | {comment} | {desc} |\n")
 
     def generate_csv(self, output_path: str = "report.csv"):
-        fieldnames = ['target', 'cve_id', 'package_name', 'version', 'severity', 'status', 'fix_version', 'cvss_score', 'user_comment', 'description']
+        fieldnames = ['target', 'target_name', 'cve_id', 'package_name', 'version', 'severity', 'status', 'fix_version', 'cvss_score', 'user_comment', 'description']
         with open(output_path, 'w', newline='') as f:
             writer = csv.DictWriter(f, fieldnames=fieldnames)
             writer.writeheader()
@@ -83,6 +83,7 @@ class ReportGenerator:
                 status = self._get_status_from_labels(issue.labels)
                 writer.writerow({
                     'target': v.target,
+                    'target_name': v.target_name or '',
                     'cve_id': v.cve_id,
                     'package_name': v.package_name,
                     'version': v.version,

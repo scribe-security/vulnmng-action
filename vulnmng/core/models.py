@@ -30,15 +30,18 @@ class Vulnerability(BaseModel):
     epss_score: Optional[float] = None
     location_id: Optional[str] = None # Identifying where it was found (e.g. path in image)
     target: str # The scan target (e.g. image name or repo path)
+    target_name: Optional[str] = None # Human readable identifier
     
 class ScanResult(BaseModel):
     timestamp: datetime = Field(default_factory=datetime.now)
     tool_name: str
     vulnerabilities: List[Vulnerability] = []
+    target_name: Optional[str] = None
     metadata: Dict[str, Any] = {}
 
 class ScanMetadata(BaseModel):
     target: str
+    target_name: Optional[str] = None
     last_scan: datetime
     tool: str
     vulnerability_count: int
