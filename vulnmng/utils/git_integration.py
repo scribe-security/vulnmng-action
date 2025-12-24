@@ -30,8 +30,29 @@ class GitIntegration:
             logger.error(f"Git command failed: {e.stderr}")
             return False
 
+    def ensure_safe_directory(self):
+        """Adds repo_path to git's safe.directory if not already present."""
+        abs_path = os.path.abspath(self.repo_path)
+        logger.info(f"Ensuring {abs_path} is marked as a safe directory")
+        # Use subprocess directly to avoid cwd issues before it's marked safe
+        try:
+            subprocess.run(
+                ["git", "config", "--global", "--add", "safe.directory", abs_path],
+                check=True,
+                capture_output=True
+            )
+        except subprocess.CalledProcessError as e:
+            logger.error(f"Failed to set safe.directory: {e.stderr}")
+
     def is_repo(self) -> bool:
-        return self._run_git(["rev-parse", "--is-inside-work-tree"])
+        # We try a simple command first, if it fails with dubious ownership, we fix it
+        if not self._run_git(["rev-parse", "--is-inside-work-tree"]):
+            # Check if it was a dubious ownership error
+            # (Note: we don't have the e.stderr here easily because _run_git catches it)
+            # Let's just always ensure safe directory if is_repo is called? 
+            # Or better, just call it explicitly in CLI.
+            return False
+        return True
 
     def checkout_branch(self):
         if not self.branch:

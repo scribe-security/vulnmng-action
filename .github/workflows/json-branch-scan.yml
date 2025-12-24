@@ -35,8 +35,7 @@ jobs:
           -w /workspace \
           -e GITHUB_TOKEN=${{ secrets.GITHUB_TOKEN }} \
           ghcr.io/${{ github.repository }}:latest \
-          sh -c "git config --global --add safe.directory /workspace && \
-                 python -m vulnmng.cli scan '${{ github.event.inputs.target }}' \
-                 --json-path /workspace/issues.json \
-                 --git-root /workspace \
-                 --git-branch json-issues"
+          python -m vulnmng.cli scan '${{ github.event.inputs.target }}' \
+          --json-path /workspace/issues.json \
+          --git-root /workspace \
+          --git-branch json-issues

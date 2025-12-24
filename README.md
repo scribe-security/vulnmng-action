@@ -33,10 +33,9 @@ docker run --rm \
   -w /workspace \
   -e GITHUB_TOKEN=$GITHUB_TOKEN \
   ghcr.io/scribe-security/vulnmng:latest \
-  sh -c "git config --global --add safe.directory /workspace && \
-         python -m vulnmng.cli scan 'registry:postgres:alpine' \
-         --git-root /workspace \
-         --git-branch json-issues"
+  python -m vulnmng.cli scan "registry:postgres:alpine" \
+  --git-root /workspace \
+  --git-branch json-issues
 ```
 
 ### 3. Generating Reports
@@ -61,12 +60,11 @@ docker run --rm \
   -w /workspace \
   -e GITHUB_TOKEN=$GITHUB_TOKEN \
   ghcr.io/scribe-security/vulnmng:latest \
-  sh -c "git config --global --add safe.directory /workspace && \
-         python -m vulnmng.cli report \
-         --git-root /workspace \
-         --git-branch json-issues \
-         --format-md /workspace/report.md \
-         --format-csv /workspace/report.csv"
+  python -m vulnmng.cli report \
+  --git-root /workspace \
+  --git-branch json-issues \
+  --format-md /workspace/report.md \
+  --format-csv /workspace/report.csv
 ```
 
 ---

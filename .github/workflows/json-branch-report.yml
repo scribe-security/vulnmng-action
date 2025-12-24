@@ -35,13 +35,12 @@ jobs:
           -w /workspace \
           -e GITHUB_TOKEN=${{ secrets.GITHUB_TOKEN }} \
           ghcr.io/${{ github.repository }}:latest \
-          sh -c "git config --global --add safe.directory /workspace && \
-                 python -m vulnmng.cli report \
-                 --json-path /workspace/issues.json \
-                 --format-md /workspace/report.md \
-                 --format-csv /workspace/report.csv \
-                 --git-root /workspace \
-                 --git-branch json-issues"
+          python -m vulnmng.cli report \
+          --json-path /workspace/issues.json \
+          --format-md /workspace/report.md \
+          --format-csv /workspace/report.csv \
+          --git-root /workspace \
+          --git-branch json-issues
     
     - name: Upload Reports as Artifacts
       uses: actions/upload-artifact@v4

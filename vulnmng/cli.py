@@ -46,6 +46,7 @@ def main():
             logger.info("Git integration enabled.")
             token = args.git_token or os.environ.get("GITHUB_TOKEN")
             git_integration = GitIntegration(repo_path=args.git_root, branch=args.git_branch, token=token)
+            git_integration.ensure_safe_directory()
             if not git_integration.is_repo():
                  logger.error(f"{args.git_root} is not a valid git repository.")
                  sys.exit(1)
@@ -124,6 +125,7 @@ def main():
             logger.info("Git integration enabled for report.")
             token = args.git_token or os.environ.get("GITHUB_TOKEN")
             git_integration = GitIntegration(repo_path=args.git_root, branch=args.git_branch, token=token)
+            git_integration.ensure_safe_directory()
             if not git_integration.is_repo():
                  logger.error(f"{args.git_root} is not a valid git repository.")
                  sys.exit(1)
