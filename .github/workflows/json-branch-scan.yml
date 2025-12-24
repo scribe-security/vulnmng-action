@@ -7,6 +7,10 @@ on:
         description: 'Target to scan (e.g., registry:postgres:alpine or /scan_target)'
         required: true
         default: 'registry:postgres:alpine'
+      image-tag:
+        description: 'Docker image tag to use (e.g., latest, feature-branch-name)'
+        required: true
+        default: 'latest'
 
 permissions:
   contents: write
@@ -26,7 +30,7 @@ jobs:
         git config user.email "github-actions[bot]@users.noreply.github.com"
     
     - name: Pull published image
-      run: docker pull ghcr.io/${{ github.repository }}:latest
+      run: docker pull ghcr.io/${{ github.repository }}:${{ github.event.inputs.image-tag }}
     
     - name: Run scan and store in json-issues branch
       run: |
@@ -34,7 +38,7 @@ jobs:
           -v $(pwd):/workspace \
           -w /workspace \
           -e GITHUB_TOKEN=${{ secrets.GITHUB_TOKEN }} \
-          ghcr.io/${{ github.repository }}:latest \
+          ghcr.io/${{ github.repository }}:${{ github.event.inputs.image-tag }} \
           scan '${{ github.event.inputs.target }}' \
           --json-path /workspace/issues.json \
           --git-root /workspace \
