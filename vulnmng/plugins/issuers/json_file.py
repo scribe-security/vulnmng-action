@@ -86,6 +86,11 @@ class JsonFileIssueManager(IssueManagerBase):
 
     def save(self):
         try:
+            # Ensure directory exists
+            dir_path = os.path.dirname(self.file_path)
+            if dir_path:
+                os.makedirs(dir_path, exist_ok=True)
+                
             data = {
                 "scans": [s.model_dump(mode='json') for s in self._scans.values()],
                 "issues": [i.model_dump(mode='json') for i in self._issues.values()]
