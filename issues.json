@@ -1,0 +1,13 @@
+{
+  "scans": [
+    {
+      "target": ".",
+      "target_name": "public-repo-test",
+      "last_scan": "2025-12-25T19:33:22.686724",
+      "tool": "grype",
+      "vulnerability_count": 0,
+      "status": "clean"
+    }
+  ],
+  "issues": []
+}
