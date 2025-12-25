@@ -33,8 +33,17 @@ if [ "$SYNC_MODE" = "dev" ]; then
   git checkout "${TEMP_BRANCH}"
   # Replace latest with dev-latest in FROM line
   sed -i "s/vulnmng:latest/vulnmng:${VULNMNG_TAG}/g" Dockerfile
+  
+  # Replace @main with @dev in test.yml
+  TEST_WF=".github/workflows/test.yml"
+  if [ -f "$TEST_WF" ]; then
+    echo "Patching $TEST_WF for @dev..."
+    sed -i "s/@main/@dev/g" "$TEST_WF"
+    git add "$TEST_WF"
+  fi
+  
   git add Dockerfile
-  git commit -m "chore: patch Dockerfile for dev-latest"
+  git commit -m "chore: patch Dockerfile and test.yml for dev mode"
   git checkout - # Go back to original branch
 fi
 
