@@ -14,14 +14,16 @@ get_input() {
   # Try Underscore version (standard)
   local var_name="INPUT_${name^^}"
   var_name="${var_name//-/_}"
-  if [ -n "${!var_name}" ]; then
-    echo "${!var_name}"
+  local val=$(printenv "$var_name")
+  if [ -n "$val" ]; then
+    echo "$val"
     return
   fi
   # Try Hyphenated version (fallback)
   local var_name_hyphen="INPUT_${name^^}"
-  if [ -n "${!var_name_hyphen}" ]; then
-    echo "${!var_name_hyphen}"
+  local val_hyphen=$(printenv "$var_name_hyphen")
+  if [ -n "$val_hyphen" ]; then
+    echo "$val_hyphen"
     return
   fi
 }
