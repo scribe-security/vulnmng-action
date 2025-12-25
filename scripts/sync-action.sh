@@ -40,7 +40,19 @@ fi
 
 # 3. Push to public repo
 echo "Pushing to public repository branch ${TARGET_BRANCH}..."
-git push "${PUBLIC_REPO_URL}" "${TEMP_BRANCH}":"${TARGET_BRANCH}" --force
+
+# If the URL contains x-access-token, try to extract and use it as a header instead 
+# to see if it improves the 403 situation.
+if [[ "$PUBLIC_REPO_URL" == *"x-access-token:"* ]]; then
+  TOKEN=$(echo "$PUBLIC_REPO_URL" | sed -e 's/.*x-access-token:\(.*\)@.*/\1/')
+  CLEAN_URL=$(echo "$PUBLIC_REPO_URL" | sed -e 's/x-access-token:.*@//')
+  
+  echo "Using Authorization header for push..."
+  AUTH_HEADER=$(echo -n "x-access-token:$TOKEN" | base64 | tr -d '\n')
+  git -c "http.extraHeader=AUTHORIZATION: basic $AUTH_HEADER" push "${CLEAN_URL}" "${TEMP_BRANCH}":"${TARGET_BRANCH}" --force
+else
+  git push "${PUBLIC_REPO_URL}" "${TEMP_BRANCH}":"${TARGET_BRANCH}" --force
+fi
 
 # 4. Cleanup
 echo "Cleaning up..."

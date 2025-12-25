@@ -37,7 +37,16 @@ jobs:
           git config user.name "GitHub Actions"
           git config user.email "actions@github.com"
 
+      - name: Validate Secrets
+        run: |
+          if [ -z "${{ secrets.SYNC_TOKEN }}" ]; then
+            echo "::error::SYNC_TOKEN is not set. Please add it to your repository secrets."
+            exit 1
+          fi
+
       - name: Sync Action
+        env:
+          SYNC_TOKEN: ${{ secrets.SYNC_TOKEN }}
         run: |
           # Determine mode
           MODE="dev"
@@ -49,5 +58,8 @@ jobs:
           
           echo "Syncing in $MODE mode"
           
-          PUBLIC_REPO_URL="https://x-access-token:${{ secrets.SYNC_TOKEN }}@github.com/scribe-security/vulnmng-action.git"
+          # We pass the URL WITHOUT the token to the script, 
+          # and let the script handle authentication via headers if needed,
+          # OR we continue using the URL but ensure it's properly constructed.
+          PUBLIC_REPO_URL="https://x-access-token:${SYNC_TOKEN}@github.com/scribe-security/vulnmng-action.git"
           ./scripts/sync-action.sh "$PUBLIC_REPO_URL" "$MODE"
