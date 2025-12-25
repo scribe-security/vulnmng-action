@@ -46,7 +46,7 @@ jobs:
       - name: Reset to Original Branch
         # The previous step switched to json-issues, we need to return
         # to the original branch to find the action folder for the next step.
-        run: git checkout ${{ github.ref_name }}
+        run: git checkout ${{ github.sha }}
 
       - name: Generate and Record Reports
         uses: ./actions/vulnmng
