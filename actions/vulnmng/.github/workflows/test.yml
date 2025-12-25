@@ -14,10 +14,13 @@ jobs:
         uses: actions/checkout@v4
 
       - name: Run Scan
-        uses: ./
+        uses: scribe-security/vulnmng-action@main
         with:
           target: '.'
           target-name: 'public-repo-test'
+          git-root: '.'
+          git-branch: 'issues'
+          git-token: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Check Results
         run: |
