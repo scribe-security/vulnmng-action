@@ -20,6 +20,8 @@ jobs:
 
       - name: Run Scan Action (Self-Test)
         uses: ./actions/vulnmng
+        env:
+          VULNMNG_DEBUG: 'true'
         with:
           command: 'scan'
           target: '.'
@@ -29,6 +31,8 @@ jobs:
 
       - name: Run Report Action
         uses: ./actions/vulnmng
+        env:
+          VULNMNG_DEBUG: 'true'
         with:
           command: 'report'
           format-md: 'test-report.md'
