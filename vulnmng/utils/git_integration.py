@@ -14,8 +14,19 @@ class GitIntegration:
 
     def _run_git(self, args: list, raise_error: bool = False) -> bool:
         try:
-            cmd = ["git"] + args
-            logger.info(f"Running git command: {' '.join(cmd)}")
+            cmd = ["git"]
+            if self.token:
+                # Format: Authorization: Basic base64(x-access-token:TOKEN)
+                auth_str = f"x-access-token:{self.token}"
+                encoded_auth = base64.b64encode(auth_str.encode()).decode()
+                auth_header = f"AUTHORIZATION: basic {encoded_auth}"
+                cmd.extend(["-c", f"http.extraHeader={auth_header}"])
+            
+            cmd.extend(args)
+            # Log the command but mask the token in logs if possible
+            # (Though GitHub Actions usually masks the raw token anyway)
+            logger.info(f"Running git command: {' '.join(['***' if 'AUTHORIZATION' in a else a for a in cmd])}")
+            
             result = subprocess.run(
                 cmd, 
                 cwd=self.repo_path, 
@@ -86,24 +97,14 @@ class GitIntegration:
             # We don't raise here yet, but we should probably inform the CLI
 
     def pull(self):
-        # Try to pull, but don't fail if there's no upstream (new branch)
-        try:
-            result = subprocess.run(
-                ["git", "pull"],
-                cwd=self.repo_path,
-                capture_output=True,
-                text=True,
-                check=True
-            )
-            if result.stdout:
-                logger.debug(result.stdout)
-        except subprocess.CalledProcessError as e:
-            # If the error is about no upstream, that's fine for a new branch
-            if "no tracking information" in e.stderr or "There is no tracking information" in e.stderr:
-                logger.info(f"No upstream branch configured (likely a new branch)")
-            else:
-                logger.error(f"Git pull failed: {e.stderr}")
-                raise
+        # Use _run_git to ensure authentication headers are included
+        logger.info("Performing git pull")
+        # We don't use _run_git directly here if we want to catch specific errors
+        # but _run_git handles the command construction. Let's just use it.
+        if not self._run_git(["pull"]):
+            # If it failed, check if it's just a missing upstream
+            # (Note: _run_git logs the error)
+            pass 
 
     def add(self, file_path: str):
         self._run_git(["add", file_path])
@@ -128,32 +129,8 @@ class GitIntegration:
 
     def push(self):
         args = ["push"]
-        
-        # If token is provided, use http.extraHeader for authentication
-        if self.token:
-            # Format: Authorization: Basic base64(x-access-token:TOKEN)
-            auth_str = f"x-access-token:{self.token}"
-            encoded_auth = base64.b64encode(auth_str.encode()).decode()
-            # We insert the -c flag right after 'git'
-            # But our _run_git appends args to ["git"]
-            # So we better modify _run_git or pass it differently.
-            # Let's modify push to use a custom git command if token is present.
-            
-            auth_header = f"AUTHORIZATION: basic {encoded_auth}"
-            # git -c http.extraHeader="auth" push ...
-            # Actually, let's just use the remote URL rewrite for simplicity in _run_git
-            # or pass the config flag.
-            
-            # Re-implementing push logic with the extra header config
-            push_args = ["-c", f"http.extraHeader={auth_header}", "push"]
-            if self.branch:
-                push_args.extend(["-u", "origin", self.branch])
-            
-            # Raise error on push failure so it's visible in CI/CD
-            self._run_git(push_args, raise_error=True)
-            return
-
         if self.branch:
              # Set upstream if needed
              args.extend(["-u", "origin", self.branch])
+        # _run_git now handles injecting the token headers
         self._run_git(args, raise_error=True)

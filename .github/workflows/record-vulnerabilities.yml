@@ -17,6 +17,7 @@ jobs:
         uses: actions/checkout@v4
         with:
           fetch-depth: 0 # Full history needed for branch switching
+          persist-credentials: false
 
       - name: Debug Directory
         run: ls -R
@@ -41,6 +42,11 @@ jobs:
           git-token: ${{ secrets.GITHUB_TOKEN }}
           # Fail on Critical so we get alerted, but still commit findings
           fail-on: 'Critical'
+
+      - name: Reset to Original Branch
+        # The previous step switched to json-issues, we need to return
+        # to the original branch to find the action folder for the next step.
+        run: git checkout ${{ github.sha }}
 
       - name: Generate and Record Reports
         uses: ./actions/vulnmng
