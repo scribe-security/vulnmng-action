@@ -18,6 +18,9 @@ jobs:
         with:
           fetch-depth: 0 # Full history needed for branch switching
 
+      - name: Debug Directory
+        run: ls -R
+
       - name: Build vulnmng base
         run: |
           TAG="latest"
