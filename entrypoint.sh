@@ -20,6 +20,11 @@ add_flag "--git-branch" "${INPUT_GIT_BRANCH}"
 add_flag "--git-token" "${INPUT_GIT_TOKEN}"
 add_flag "--target-name" "${INPUT_TARGET_NAME}"
 
+# Fallback for GITHUB_TOKEN environment variable
+if [ -n "$INPUT_GIT_TOKEN" ]; then
+  export GITHUB_TOKEN="$INPUT_GIT_TOKEN"
+fi
+
 if [ "$COMMAND" = "scan" ]; then
   # Scan specific flags
   if [ -n "${INPUT_TARGET}" ]; then

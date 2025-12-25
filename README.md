@@ -15,6 +15,7 @@ steps:
       command: 'scan'
       target: '.'
       fail-on: 'High'
+      git-token: ${{ secrets.GITHUB_TOKEN }}
 ```
 
 ## Inputs
@@ -29,7 +30,7 @@ steps:
 | `format-csv` | Path to generate CSV report | |
 | `git-root` | Path to Git repository root for integration | |
 | `git-branch` | Git branch to use | |
-| `git-token` | GitHub token for authentication | `secrets.GITHUB_TOKEN` |
+| `git-token` | GitHub token for authentication | `${{ secrets.GITHUB_TOKEN }}` |
 | `fail-on` | Fail if any vulnerability with this severity or higher is found (`Low`, `Medium`, `High`, `Critical`) | |
 | `extra-args` | Additional raw CLI arguments | |
 

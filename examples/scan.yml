@@ -20,3 +20,4 @@ jobs:
           target: '.'
           fail-on: 'High'
           git-root: '.' # Enables automatic commit of scan results
+          git-token: ${{ secrets.GITHUB_TOKEN }}
