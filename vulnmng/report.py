@@ -29,6 +29,11 @@ class ReportGenerator:
             self._get_status_from_labels(issue.labels)
 
     def generate_markdown(self, output_path: str = "report.md"):
+        # Ensure directory exists
+        dir_path = os.path.dirname(output_path)
+        if dir_path:
+            os.makedirs(dir_path, exist_ok=True)
+            
         with open(output_path, 'w') as f:
             f.write(f"# Vulnerability Scan Report\n")
             f.write(f"Generated at: {datetime.now().isoformat()}\n\n")
@@ -74,6 +79,11 @@ class ReportGenerator:
                 f.write(f"| {v.target} | {v.target_name or 'N/A'} | {v.cve_id} | {v.package_name} | {v.version} | {v.severity.value} | {status} | {v.fix_version or 'N/A'} | {comment} | {desc} |\n")
 
     def generate_csv(self, output_path: str = "report.csv"):
+        # Ensure directory exists
+        dir_path = os.path.dirname(output_path)
+        if dir_path:
+            os.makedirs(dir_path, exist_ok=True)
+            
         fieldnames = ['target', 'target_name', 'cve_id', 'package_name', 'version', 'severity', 'status', 'fix_version', 'cvss_score', 'user_comment', 'description']
         with open(output_path, 'w', newline='') as f:
             writer = csv.DictWriter(f, fieldnames=fieldnames)
