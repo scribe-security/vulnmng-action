@@ -17,6 +17,7 @@ jobs:
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
+          persist-credentials: false
 
       - name: Build Base Image
         run: |
@@ -43,6 +44,9 @@ jobs:
           git-token: ${{ secrets.GITHUB_TOKEN }}
           # We don't fail here yet to ensure reports are generated
           fail-on: 'Critical'
+
+      - name: Reset to Original Branch
+        run: git checkout ${{ github.ref_name }}
 
       - name: Run Report Action
         uses: ./actions/vulnmng
