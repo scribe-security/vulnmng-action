@@ -19,7 +19,13 @@ jobs:
           fetch-depth: 0 # Full history needed for branch switching
 
       - name: Build vulnmng base
-        run: docker build -t ghcr.io/scribe-security/vulnmng:latest .
+        run: |
+          TAG="latest"
+          if [[ "${{ github.ref }}" != "refs/heads/main" ]]; then
+            TAG="dev-latest"
+          fi
+          docker build -t ghcr.io/scribe-security/vulnmng:$TAG .
+          docker tag ghcr.io/scribe-security/vulnmng:$TAG ghcr.io/scribe-security/vulnmng:latest
 
       - name: Scan and Record to Branch
         uses: ./actions/vulnmng

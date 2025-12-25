@@ -20,7 +20,14 @@ jobs:
 
       - name: Build Base Image
         run: |
-          docker build -t ghcr.io/scribe-security/vulnmng:latest .
+          TAG="latest"
+          if [[ "${{ github.ref }}" != "refs/heads/main" ]]; then
+            TAG="dev-latest"
+          fi
+          echo "Building with tag: $TAG"
+          docker build -t ghcr.io/scribe-security/vulnmng:$TAG .
+          # For local action testing within this workflow, we might also need a consistent local tag
+          docker tag ghcr.io/scribe-security/vulnmng:$TAG ghcr.io/scribe-security/vulnmng:latest
 
       - name: Run Scan Action (Self-Test)
         uses: ./actions/vulnmng
