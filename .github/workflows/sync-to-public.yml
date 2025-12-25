@@ -1,0 +1,49 @@
+name: Sync to Public Repo
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - 'actions/vulnmng/**'
+      - 'scripts/sync-action.sh'
+  workflow_dispatch:
+    inputs:
+      mode:
+        description: 'Sync mode (prod or dev)'
+        required: true
+        default: 'dev'
+        type: choice
+        options:
+          - prod
+          - dev
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout monorepo
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          token: ${{ secrets.SYNC_TOKEN || secrets.GITHUB_TOKEN }}
+
+      - name: Configure Git
+        run: |
+          git config user.name "GitHub Actions"
+          git config user.email "actions@github.com"
+
+      - name: Sync Action
+        run: |
+          # Determine mode
+          MODE="dev"
+          if [[ "${{ github.event_name }}" == "push" && "${{ github.ref }}" == "refs/heads/main" ]]; then
+            MODE="prod"
+          elif [[ "${{ github.event_name }}" == "workflow_dispatch" ]]; then
+            MODE="${{ inputs.mode }}"
+          fi
+          
+          echo "Syncing in $MODE mode"
+          
+          PUBLIC_REPO_URL="https://x-access-token:${{ secrets.SYNC_TOKEN }}@github.com/scribe-security/vulnmng-action.git"
+          ./scripts/sync-action.sh "$PUBLIC_REPO_URL" "$MODE"

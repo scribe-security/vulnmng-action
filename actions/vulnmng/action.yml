@@ -1,0 +1,55 @@
+name: 'Vulnerability Management Scan'
+description: 'Wraps the vulnmng CLI for security scanning and reporting'
+author: 'Scribe Security'
+inputs:
+  command:
+    description: 'Command to run (scan or report)'
+    required: true
+    default: 'scan'
+  target:
+    description: 'Target to scan (path or image)'
+    required: false
+  target-name:
+    description: 'Human-readable name for the scan target'
+    required: false
+  json-path:
+    description: 'Path to the issues JSON file'
+    required: false
+    default: 'issues.json'
+  format-md:
+    description: 'Path to generate Markdown report (report command only)'
+    required: false
+  format-csv:
+    description: 'Path to generate CSV report (report command only)'
+    required: false
+  git-root:
+    description: 'Path to Git repository root for integration'
+    required: false
+  git-branch:
+    description: 'Git branch to use'
+    required: false
+  git-token:
+    description: 'GitHub token for authentication'
+    required: false
+  fail-on:
+    description: 'Fail if any vulnerability with this severity or higher is found (Low, Medium, High, Critical)'
+    required: false
+  extra-args:
+    description: 'Additional raw CLI arguments'
+    required: false
+
+outputs:
+  json-path:
+    description: 'Path to the generated or updated issues JSON file'
+  report-md:
+    description: 'Path to the generated Markdown report'
+  report-csv:
+    description: 'Path to the generated CSV report'
+
+runs:
+  using: 'docker'
+  image: 'Dockerfile'
+
+branding:
+  icon: 'shield'
+  color: 'blue'

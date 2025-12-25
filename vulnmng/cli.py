@@ -7,6 +7,7 @@ from vulnmng.plugins.issuers.json_file import JsonFileIssueManager
 from vulnmng.plugins.enhancers.cisa_enrichment import CisaEnrichment
 from vulnmng.report import ReportGenerator
 from vulnmng.utils.git_integration import GitIntegration
+from vulnmng.core.models import Severity
 
 # Setup logging
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(name)s - %(levelname)s - %(message)s')
@@ -25,6 +26,7 @@ def main():
     scan_parser.add_argument("--git-branch", help="Git branch to use. Default: current branch.")
     scan_parser.add_argument("--git-token", help="GitHub token for authentication. Can also use GITHUB_TOKEN env var.")
     scan_parser.add_argument("--target-name", help="Human-readable name for the scan target.")
+    scan_parser.add_argument("--fail-on", choices=["Low", "Medium", "High", "Critical"], help="Fail if any vulnerability with this severity or higher is found.")
 
     # Report Command
     report_parser = subparsers.add_parser("report", help="Generate a report")
@@ -49,6 +51,7 @@ def main():
             token = args.git_token or os.environ.get("GITHUB_TOKEN")
             git_integration = GitIntegration(repo_path=args.git_root, branch=args.git_branch, token=token)
             git_integration.ensure_safe_directory()
+            git_integration.ensure_identity()
             if not git_integration.is_repo():
                  logger.error(f"{args.git_root} is not a valid git repository.")
                  sys.exit(1)
@@ -155,6 +158,37 @@ def main():
             git_integration.push()
             logger.info("Git push completed.")
 
+        # 6. Failure Logic
+        if args.fail_on:
+            severity_order = {
+                "Low": 1,
+                "Medium": 2,
+                "High": 3,
+                "Critical": 4
+            }
+            threshold = severity_order.get(args.fail_on, 0)
+            
+            # Map model Severity to our internal order
+            model_severity_map = {
+                Severity.LOW: 1,
+                Severity.MEDIUM: 2,
+                Severity.HIGH: 3,
+                Severity.CRITICAL: 4,
+                Severity.NEGLIGIBLE: 0,
+                Severity.UNKNOWN: 0
+            }
+
+            failed_vulns = [
+                v for v in scan_result.vulnerabilities 
+                if model_severity_map.get(v.severity, 0) >= threshold
+            ]
+            
+            if failed_vulns:
+                logger.error(f"Found {len(failed_vulns)} vulnerabilities with severity {args.fail_on} or higher.")
+                sys.exit(1)
+            else:
+                logger.info(f"No vulnerabilities with severity {args.fail_on} or higher found.")
+
     elif args.command == "report":
         # 0. Git Setup
         git_integration = None
@@ -163,6 +197,7 @@ def main():
             token = args.git_token or os.environ.get("GITHUB_TOKEN")
             git_integration = GitIntegration(repo_path=args.git_root, branch=args.git_branch, token=token)
             git_integration.ensure_safe_directory()
+            git_integration.ensure_identity()
             if not git_integration.is_repo():
                  logger.error(f"{args.git_root} is not a valid git repository.")
                  sys.exit(1)

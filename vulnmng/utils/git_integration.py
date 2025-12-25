@@ -46,6 +46,19 @@ class GitIntegration:
         except subprocess.CalledProcessError as e:
             logger.error(f"Failed to set safe.directory: {e.stderr}")
 
+    def ensure_identity(self):
+        """Sets a default git identity if none is configured."""
+        logger.info("Ensuring git identity is configured")
+        # Check if user.email is set
+        if not self._run_git(["config", "--get", "user.email"]):
+            logger.info("Setting default git user.email")
+            self._run_git(["config", "--global", "user.email", "actions@github.com"])
+        
+        # Check if user.name is set
+        if not self._run_git(["config", "--get", "user.name"]):
+            logger.info("Setting default git user.name")
+            self._run_git(["config", "--global", "user.name", "GitHub Actions"])
+
     def is_repo(self) -> bool:
         # We try a simple command first, if it fails with dubious ownership, we fix it
         if not self._run_git(["rev-parse", "--is-inside-work-tree"]):
