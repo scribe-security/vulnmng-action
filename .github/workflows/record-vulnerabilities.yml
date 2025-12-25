@@ -32,3 +32,14 @@ jobs:
           git-token: ${{ secrets.GITHUB_TOKEN }}
           # Fail on Critical so we get alerted, but still commit findings
           fail-on: 'Critical'
+
+      - name: Generate and Record Reports
+        uses: ./actions/vulnmng
+        with:
+          command: 'report'
+          target-name: 'main-repo'
+          format-md: 'reports/vulnerabilities.md'
+          format-csv: 'reports/vulnerabilities.csv'
+          git-root: '.'
+          git-branch: 'json-issues'
+          git-token: ${{ secrets.GITHUB_TOKEN }}

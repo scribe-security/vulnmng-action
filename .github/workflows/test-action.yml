@@ -45,6 +45,9 @@ jobs:
           command: 'report'
           format-md: 'test-report.md'
           format-csv: 'test-report.csv'
+          git-root: '.'
+          git-branch: 'test-issues'
+          git-token: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Check Reports
         run: |
