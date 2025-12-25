@@ -18,6 +18,9 @@ jobs:
         with:
           target: '.'
           target-name: 'public-repo-test'
+          git-root: '.'
+          git-branch: 'issues'
+          git-token: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Check Results
         run: |
