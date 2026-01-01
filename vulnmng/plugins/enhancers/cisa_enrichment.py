@@ -35,7 +35,7 @@ class CisaEnrichment(EnhancerBase):
         
         enrichment_data = {}
         try:
-            logger.info(f"Fetching enrichment for {cve_id} from {url}")
+            logger.debug(f"Fetching enrichment for {cve_id} from {url}")
             response = requests.get(url, timeout=5)
             if response.status_code == 200:
                 data = response.json()

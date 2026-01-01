@@ -11,6 +11,10 @@ on:
         description: 'Docker image tag to use (e.g., latest, feature-branch-name)'
         required: true
         default: 'latest'
+      log-level:
+        description: 'Logging level (DEBUG, INFO, WARNING, ERROR, CRITICAL)'
+        required: false
+        default: 'WARNING'
 
 permissions:
   contents: write
@@ -42,4 +46,5 @@ jobs:
           scan '${{ github.event.inputs.target }}' \
           --json-path /workspace/issues.json \
           --git-root /workspace \
-          --git-branch json-issues
+          --git-branch json-issues \
+          --log-level ${{ github.event.inputs.log-level }}
