@@ -8,8 +8,6 @@ from vulnmng.plugins.enhancers.cisa_enrichment import CisaEnrichment
 from vulnmng.report import ReportGenerator
 from vulnmng.utils.git_integration import GitIntegration
 
-# Setup logging
-logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(name)s - %(levelname)s - %(message)s')
 logger = logging.getLogger("vulnmng")
 
 def main():
@@ -25,6 +23,7 @@ def main():
     scan_parser.add_argument("--git-branch", help="Git branch to use. Default: current branch.")
     scan_parser.add_argument("--git-token", help="GitHub token for authentication. Can also use GITHUB_TOKEN env var.")
     scan_parser.add_argument("--target-name", help="Human-readable name for the scan target.")
+    scan_parser.add_argument("--log-level", choices=["DEBUG", "INFO", "WARNING", "ERROR", "CRITICAL"], default="WARNING", help="Logging level (default: WARNING)")
 
     # Report Command
     report_parser = subparsers.add_parser("report", help="Generate a report")
@@ -36,8 +35,17 @@ def main():
     report_parser.add_argument("--git-branch", help="Git branch to use. Default: current branch.")
     report_parser.add_argument("--git-token", help="GitHub token for authentication. Can also use GITHUB_TOKEN env var.")
     report_parser.add_argument("--target-name", help="Filter report by target name")
+    report_parser.add_argument("--log-level", choices=["DEBUG", "INFO", "WARNING", "ERROR", "CRITICAL"], default="WARNING", help="Logging level (default: WARNING)")
 
     args = parser.parse_args()
+
+    # Configure logging based on log-level argument
+    if hasattr(args, 'log_level'):
+        numeric_level = getattr(logging, args.log_level)
+        logging.basicConfig(level=numeric_level, format='%(asctime)s - %(name)s - %(levelname)s - %(message)s')
+    else:
+        # Default if no command specified
+        logging.basicConfig(level=logging.WARNING, format='%(asctime)s - %(name)s - %(levelname)s - %(message)s')
 
     if args.command == "scan":
         logger.info(f"Starting scan for {args.target}")

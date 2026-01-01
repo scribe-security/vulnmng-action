@@ -11,6 +11,10 @@ on:
         description: 'Docker image tag to use (e.g., latest, feature-branch-name)'
         required: true
         default: 'latest'
+      log-level:
+        description: 'Logging level (DEBUG, INFO, WARNING, ERROR, CRITICAL)'
+        required: false
+        default: 'WARNING'
 
 permissions:
   contents: write
@@ -44,7 +48,8 @@ jobs:
           --format-md /workspace/report.md \
           --format-csv /workspace/report.csv \
           --git-root /workspace \
-          --git-branch json-issues
+          --git-branch json-issues \
+          --log-level ${{ github.event.inputs.log-level }}
     
     - name: Upload Reports as Artifacts
       uses: actions/upload-artifact@v4

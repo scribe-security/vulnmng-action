@@ -15,7 +15,7 @@ class GitIntegration:
     def _run_git(self, args: list, raise_error: bool = False) -> bool:
         try:
             cmd = ["git"] + args
-            logger.info(f"Running git command: {' '.join(cmd)}")
+            logger.debug(f"Running git command: {' '.join(cmd)}")
             result = subprocess.run(
                 cmd, 
                 cwd=self.repo_path, 
@@ -35,7 +35,7 @@ class GitIntegration:
     def ensure_safe_directory(self):
         """Adds repo_path to git's safe.directory if not already present."""
         abs_path = os.path.abspath(self.repo_path)
-        logger.info(f"Ensuring {abs_path} is marked as a safe directory")
+        logger.debug(f"Ensuring {abs_path} is marked as a safe directory")
         # Use subprocess directly to avoid cwd issues before it's marked safe
         try:
             subprocess.run(
@@ -67,7 +67,7 @@ class GitIntegration:
             return
             
         # If it failed, it might truly be a new branch
-        logger.info(f"Branch {self.branch} not found locally or on origin. Creating it.")
+        logger.debug(f"Branch {self.branch} not found locally or on origin. Creating it.")
         if not self._run_git(["checkout", "-b", self.branch]):
             logger.error(f"Failed to create branch {self.branch}")
             # We don't raise here yet, but we should probably inform the CLI
@@ -87,7 +87,7 @@ class GitIntegration:
         except subprocess.CalledProcessError as e:
             # If the error is about no upstream, that's fine for a new branch
             if "no tracking information" in e.stderr or "There is no tracking information" in e.stderr:
-                logger.info(f"No upstream branch configured (likely a new branch)")
+                logger.debug(f"No upstream branch configured (likely a new branch)")
             else:
                 logger.error(f"Git pull failed: {e.stderr}")
                 raise
@@ -105,7 +105,7 @@ class GitIntegration:
                 capture_output=True
             )
             # If check=True succeeds, there are NO changes (exit code 0)
-            logger.info("No changes to commit")
+            logger.debug("No changes to commit")
             return
         except subprocess.CalledProcessError:
             # Exit code 1 means there ARE changes, proceed with commit
