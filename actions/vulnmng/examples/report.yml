@@ -1,0 +1,26 @@
+name: Vulnerability Report
+
+on:
+  schedule:
+    - cron: '0 0 * * *' # Run daily
+  workflow_dispatch:
+
+jobs:
+  report:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Generate Reports
+        uses: scribe-security/vulnmng-action@v1
+        with:
+          command: 'report'
+          format-md: 'reports/vulnerabilities.md'
+          format-csv: 'reports/vulnerabilities.csv'
+
+      - name: Upload Artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: security-reports
+          path: reports/

@@ -1,0 +1,28 @@
+name: Test Action
+
+on:
+  push:
+    branches: [ main, dev ]
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Run Scan
+        uses: scribe-security/vulnmng-action@main
+        with:
+          target: '.'
+          target-name: 'public-repo-test'
+          git-root: '.'
+          git-branch: 'issues'
+          git-token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Check Results
+        run: |
+          ls -l issues.json
+          grep "public-repo-test" issues.json

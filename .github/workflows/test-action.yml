@@ -1,0 +1,66 @@
+name: Test vulnmng Action
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+  workflow_dispatch:
+
+jobs:
+  test-action:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+
+      - name: Build Base Image
+        run: |
+          TAG="latest"
+          if [[ "${{ github.ref }}" != "refs/heads/main" ]]; then
+            TAG="dev-latest"
+          fi
+          echo "Building with tag: $TAG"
+          docker build -t ghcr.io/scribe-security/vulnmng:$TAG .
+          # For local action testing within this workflow, we might also need a consistent local tag
+          docker tag ghcr.io/scribe-security/vulnmng:$TAG ghcr.io/scribe-security/vulnmng:latest
+
+      - name: Run Scan Action (Self-Test)
+        uses: ./actions/vulnmng
+        env:
+          VULNMNG_DEBUG: 'true'
+        with:
+          command: 'scan'
+          target: '.'
+          target-name: 'monorepo-test'
+          # Verify git integration works in test
+          git-root: '.'
+          git-branch: 'test-issues'
+          git-token: ${{ secrets.GITHUB_TOKEN }}
+          # We don't fail here yet to ensure reports are generated
+          fail-on: 'Critical'
+
+      - name: Reset to Original Branch
+        run: git checkout ${{ github.sha }}
+
+      - name: Run Report Action
+        uses: ./actions/vulnmng
+        env:
+          VULNMNG_DEBUG: 'true'
+        with:
+          command: 'report'
+          format-md: 'test-report.md'
+          format-csv: 'test-report.csv'
+          git-root: '.'
+          git-branch: 'test-issues'
+          git-token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Check Reports
+        run: |
+          ls -l test-report.md test-report.csv issues.json
+          grep "monorepo-test" issues.json

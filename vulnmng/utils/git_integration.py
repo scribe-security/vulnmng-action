@@ -14,8 +14,19 @@ class GitIntegration:
 
     def _run_git(self, args: list, raise_error: bool = False) -> bool:
         try:
-            cmd = ["git"] + args
-            logger.debug(f"Running git command: {' '.join(cmd)}")
+            cmd = ["git"]
+            if self.token:
+                # Format: Authorization: Basic base64(x-access-token:TOKEN)
+                auth_str = f"x-access-token:{self.token}"
+                encoded_auth = base64.b64encode(auth_str.encode()).decode()
+                auth_header = f"AUTHORIZATION: basic {encoded_auth}"
+                cmd.extend(["-c", f"http.extraHeader={auth_header}"])
+            
+            cmd.extend(args)
+            # Log the command but mask the token in logs if possible
+            # (Though GitHub Actions usually masks the raw token anyway)
+            logger.info(f"Running git command: {' '.join(['***' if 'AUTHORIZATION' in a else a for a in cmd])}")
+            
             result = subprocess.run(
                 cmd, 
                 cwd=self.repo_path, 
@@ -45,6 +56,19 @@ class GitIntegration:
             )
         except subprocess.CalledProcessError as e:
             logger.error(f"Failed to set safe.directory: {e.stderr}")
+
+    def ensure_identity(self):
+        """Sets a default git identity if none is configured."""
+        logger.info("Ensuring git identity is configured")
+        # Check if user.email is set
+        if not self._run_git(["config", "--get", "user.email"]):
+            logger.info("Setting default git user.email")
+            self._run_git(["config", "--global", "user.email", "actions@github.com"])
+        
+        # Check if user.name is set
+        if not self._run_git(["config", "--get", "user.name"]):
+            logger.info("Setting default git user.name")
+            self._run_git(["config", "--global", "user.name", "GitHub Actions"])
 
     def is_repo(self) -> bool:
         # We try a simple command first, if it fails with dubious ownership, we fix it
@@ -115,32 +139,8 @@ class GitIntegration:
 
     def push(self):
         args = ["push"]
-        
-        # If token is provided, use http.extraHeader for authentication
-        if self.token:
-            # Format: Authorization: Basic base64(x-access-token:TOKEN)
-            auth_str = f"x-access-token:{self.token}"
-            encoded_auth = base64.b64encode(auth_str.encode()).decode()
-            # We insert the -c flag right after 'git'
-            # But our _run_git appends args to ["git"]
-            # So we better modify _run_git or pass it differently.
-            # Let's modify push to use a custom git command if token is present.
-            
-            auth_header = f"AUTHORIZATION: basic {encoded_auth}"
-            # git -c http.extraHeader="auth" push ...
-            # Actually, let's just use the remote URL rewrite for simplicity in _run_git
-            # or pass the config flag.
-            
-            # Re-implementing push logic with the extra header config
-            push_args = ["-c", f"http.extraHeader={auth_header}", "push"]
-            if self.branch:
-                push_args.extend(["-u", "origin", self.branch])
-            
-            # Raise error on push failure so it's visible in CI/CD
-            self._run_git(push_args, raise_error=True)
-            return
-
         if self.branch:
              # Set upstream if needed
              args.extend(["-u", "origin", self.branch])
+        # _run_git now handles injecting the token headers
         self._run_git(args, raise_error=True)

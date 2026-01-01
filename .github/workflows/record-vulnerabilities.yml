@@ -1,0 +1,60 @@
+name: Record Vulnerabilities
+
+on:
+  push:
+    branches: [ main ]
+  schedule:
+    - cron: '0 0 * * *' # Daily scan
+  workflow_dispatch:
+
+jobs:
+  record-vulns:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0 # Full history needed for branch switching
+          persist-credentials: false
+
+      - name: Debug Directory
+        run: ls -R
+
+      - name: Build vulnmng base
+        run: |
+          TAG="latest"
+          if [[ "${{ github.ref }}" != "refs/heads/main" ]]; then
+            TAG="dev-latest"
+          fi
+          docker build -t ghcr.io/scribe-security/vulnmng:$TAG .
+          docker tag ghcr.io/scribe-security/vulnmng:$TAG ghcr.io/scribe-security/vulnmng:latest
+
+      - name: Scan and Record to Branch
+        uses: ./actions/vulnmng
+        with:
+          command: 'scan'
+          target: '.'
+          target-name: 'main-repo'
+          git-root: '.'
+          git-branch: 'json-issues'
+          git-token: ${{ secrets.GITHUB_TOKEN }}
+          # Fail on Critical so we get alerted, but still commit findings
+          fail-on: 'Critical'
+
+      - name: Reset to Original Branch
+        # The previous step switched to json-issues, we need to return
+        # to the original branch to find the action folder for the next step.
+        run: git checkout ${{ github.sha }}
+
+      - name: Generate and Record Reports
+        uses: ./actions/vulnmng
+        with:
+          command: 'report'
+          target-name: 'main-repo'
+          format-md: 'reports/vulnerabilities.md'
+          format-csv: 'reports/vulnerabilities.csv'
+          git-root: '.'
+          git-branch: 'json-issues'
+          git-token: ${{ secrets.GITHUB_TOKEN }}

@@ -1,0 +1,65 @@
+name: Sync to Public Repo
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - 'actions/vulnmng/**'
+      - 'scripts/sync-action.sh'
+  workflow_dispatch:
+    inputs:
+      mode:
+        description: 'Sync mode (prod or dev)'
+        required: true
+        default: 'dev'
+        type: choice
+        options:
+          - prod
+          - dev
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout monorepo
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+
+      - name: Debug Directory
+        run: |
+          ls -R actions/vulnmng
+
+      - name: Configure Git
+        run: |
+          git config user.name "GitHub Actions"
+          git config user.email "actions@github.com"
+
+      - name: Validate Secrets
+        run: |
+          if [ -z "${{ secrets.SYNC_TOKEN }}" ]; then
+            echo "::error::SYNC_TOKEN is not set. Please add it to your repository secrets."
+            exit 1
+          fi
+
+      - name: Sync Action
+        env:
+          SYNC_TOKEN: ${{ secrets.SYNC_TOKEN }}
+        run: |
+          # Determine mode
+          MODE="dev"
+          if [[ "${{ github.event_name }}" == "push" && "${{ github.ref }}" == "refs/heads/main" ]]; then
+            MODE="prod"
+          elif [[ "${{ github.event_name }}" == "workflow_dispatch" ]]; then
+            MODE="${{ inputs.mode }}"
+          fi
+          
+          echo "Syncing in $MODE mode"
+          
+          # We pass the URL WITHOUT the token to the script, 
+          # and let the script handle authentication via headers if needed,
+          # OR we continue using the URL but ensure it's properly constructed.
+          PUBLIC_REPO_URL="https://x-access-token:${SYNC_TOKEN}@github.com/scribe-security/vulnmng-action.git"
+          ./scripts/sync-action.sh "$PUBLIC_REPO_URL" "$MODE"
