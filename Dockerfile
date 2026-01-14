@@ -1,4 +1,7 @@
-FROM ghcr.io/scribe-security/vulnmng:latest
+# Build argument for vulnmng version - can be overridden during build
+# This will be updated by the sync script for versioned releases
+ARG VULNMNG_VERSION=latest
+FROM ghcr.io/scribe-security/vulnmng:${VULNMNG_VERSION}
 
 # The base image already contains the vulnmng CLI and its dependencies.
 # We only need to add the action-specific entrypoint script.
