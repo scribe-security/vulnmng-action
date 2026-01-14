@@ -31,7 +31,7 @@ class Vulnerability(BaseModel):
     location_id: Optional[str] = None # Identifying where it was found (e.g. path in image)
     target: str # The scan target (e.g. image name or repo path)
     target_name: Optional[str] = None # Human readable identifier
-    aliases: List[str] = [] # Related vulnerability IDs (e.g., GHSA, CGA when CVE is primary, or vice versa)
+    aliases: List[str] = Field(default_factory=list) # Related vulnerability IDs (e.g., GHSA, CGA when CVE is primary, or vice versa)
     
 class ScanResult(BaseModel):
     timestamp: datetime = Field(default_factory=datetime.now)
@@ -52,10 +52,10 @@ class Issue(BaseModel):
     id: Optional[str] = None # ID in the issue tracking system
     cve_id: str
     title: str
-    labels: List[str] = []  # Includes status:* labels
+    labels: List[str] = Field(default_factory=list)  # Includes status:* labels
     user_comment: Optional[str] = None  # User's explanation for status/triage
     created_at: datetime = Field(default_factory=datetime.now)
     updated_at: datetime = Field(default_factory=datetime.now)
     details: Dict[str, Any] = {}  # Enrichment data
     vulnerability: Vulnerability
-    aliases: List[str] = [] # Related vulnerability IDs (mirrors vulnerability.aliases for convenience)
+    aliases: List[str] = Field(default_factory=list) # Related vulnerability IDs (mirrors vulnerability.aliases for convenience)

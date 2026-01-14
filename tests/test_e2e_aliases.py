@@ -11,8 +11,8 @@ import tempfile
 import shutil
 from datetime import datetime
 
-# Add the vulnmng module to the path
-sys.path.insert(0, '/home/runner/work/vulnmng/vulnmng')
+# Add the vulnmng module to the path - relative to this test file
+sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..'))
 
 from vulnmng.core.models import Vulnerability, Severity
 from vulnmng.plugins.issuers.json_file import JsonFileIssueManager
