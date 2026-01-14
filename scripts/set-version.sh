@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 # Script to update the Dockerfile with a specific vulnmng version
 # This script should be called by the monorepo sync script during versioning
 
@@ -16,10 +16,10 @@ if [ "$VERSION" = "-h" ] || [ "$VERSION" = "--help" ]; then
   exit 0
 fi
 
-# Validate version format (alphanumeric, dots, and hyphens only)
+# Validate version format (alphanumeric, dots, hyphens, and underscores only)
 if ! [[ "$VERSION" =~ ^[a-zA-Z0-9._-]+$ ]]; then
   echo "❌ Error: Invalid version format: ${VERSION}"
-  echo "   Version must contain only letters, numbers, dots, hyphens, and underscores"
+  echo "   Version must contain only letters, numbers, periods (.), hyphens (-), and underscores (_)"
   exit 1
 fi
 
