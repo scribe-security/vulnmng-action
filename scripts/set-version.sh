@@ -16,13 +16,32 @@ if [ "$VERSION" = "-h" ] || [ "$VERSION" = "--help" ]; then
   exit 0
 fi
 
+# Validate version format (alphanumeric, dots, and hyphens only)
+if ! [[ "$VERSION" =~ ^[a-zA-Z0-9._-]+$ ]]; then
+  echo "❌ Error: Invalid version format: ${VERSION}"
+  echo "   Version must contain only letters, numbers, dots, hyphens, and underscores"
+  exit 1
+fi
+
+# Get the script directory and find Dockerfile
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+REPO_ROOT="$(cd "${SCRIPT_DIR}/.." && pwd)"
+DOCKERFILE="${REPO_ROOT}/Dockerfile"
+
+# Check if Dockerfile exists
+if [ ! -f "$DOCKERFILE" ]; then
+  echo "❌ Error: Dockerfile not found at ${DOCKERFILE}"
+  exit 1
+fi
+
 echo "Updating Dockerfile to use vulnmng version: ${VERSION}"
 
 # Update the ARG default value in the Dockerfile
-sed -i "s/^ARG VULNMNG_VERSION=.*/ARG VULNMNG_VERSION=${VERSION}/" Dockerfile
+# Use | as delimiter to avoid issues with / in version strings
+sed -i "s|^ARG VULNMNG_VERSION=.*|ARG VULNMNG_VERSION=${VERSION}|" "$DOCKERFILE"
 
 # Verify the change
-if grep -q "^ARG VULNMNG_VERSION=${VERSION}" Dockerfile; then
+if grep -q "^ARG VULNMNG_VERSION=${VERSION}" "$DOCKERFILE"; then
   echo "✅ Dockerfile updated successfully"
   echo "   FROM ghcr.io/scribe-security/vulnmng:${VERSION}"
 else
