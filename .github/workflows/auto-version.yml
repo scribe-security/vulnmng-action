@@ -116,6 +116,41 @@ jobs:
           
           echo "✅ Created and pushed tag: $NEW_VERSION"
 
+      - name: Trigger CI Build
+        if: steps.analyze.outputs.bump_type != 'none'
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const newVersion = '${{ steps.new_version.outputs.new_version }}';
+            await github.rest.actions.createWorkflowDispatch({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              workflow_id: 'ci.yml',
+              ref: 'main',
+              inputs: {
+                version_tag: newVersion
+              }
+            });
+            console.log(`Triggered CI workflow with version tag: ${newVersion}`);
+
+      - name: Trigger Sync to Public
+        if: steps.analyze.outputs.bump_type != 'none'
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const newVersion = '${{ steps.new_version.outputs.new_version }}';
+            await github.rest.actions.createWorkflowDispatch({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              workflow_id: 'sync-to-public.yml',
+              ref: 'main',
+              inputs: {
+                mode: 'prod',
+                version_tag: newVersion
+              }
+            });
+            console.log(`Triggered sync workflow with version tag: ${newVersion}`);
+
       - name: No Version Bump Needed
         if: steps.analyze.outputs.bump_type == 'none'
         run: |

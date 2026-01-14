@@ -7,8 +7,17 @@ on:
     paths:
       - 'actions/vulnmng/**'
       - 'scripts/sync-action.sh'
-    tags:
-      - 'v*.*.*'
+  workflow_call:
+    inputs:
+      version_tag:
+        description: 'Version tag to sync (e.g., v1.0.0)'
+        required: false
+        type: string
+      mode:
+        description: 'Sync mode (prod or dev)'
+        required: false
+        type: string
+        default: 'prod'
   workflow_dispatch:
     inputs:
       mode:
@@ -19,6 +28,10 @@ on:
         options:
           - prod
           - dev
+      version_tag:
+        description: 'Version tag to sync (e.g., v1.0.0)'
+        required: false
+        type: string
 
 jobs:
   sync:
@@ -52,13 +65,11 @@ jobs:
         run: |
           # Determine mode and version tag
           MODE="dev"
-          VERSION_TAG=""
+          VERSION_TAG="${{ inputs.version_tag }}"
           
-          # Check if this is a tag push
-          if [[ "${{ github.ref }}" == refs/tags/v*.*.* ]]; then
-            VERSION_TAG="${GITHUB_REF#refs/tags/}"
-            MODE="prod"
-            echo "Tag detected: $VERSION_TAG"
+          # Determine mode based on trigger
+          if [[ "${{ github.event_name }}" == "workflow_call" ]]; then
+            MODE="${{ inputs.mode }}"
           elif [[ "${{ github.event_name }}" == "push" && "${{ github.ref }}" == "refs/heads/main" ]]; then
             MODE="prod"
           elif [[ "${{ github.event_name }}" == "workflow_dispatch" ]]; then
@@ -66,6 +77,9 @@ jobs:
           fi
           
           echo "Syncing in $MODE mode"
+          if [ -n "$VERSION_TAG" ]; then
+            echo "With version tag: $VERSION_TAG"
+          fi
           
           PUBLIC_REPO_URL="https://x-access-token:${SYNC_TOKEN}@github.com/scribe-security/vulnmng-action.git"
           ./scripts/sync-action.sh "$PUBLIC_REPO_URL" "$MODE" "$VERSION_TAG"
