@@ -7,7 +7,7 @@ from vulnmng.plugins.issuers.json_file import JsonFileIssueManager
 from vulnmng.plugins.enhancers.cisa_enrichment import CisaEnrichment
 from vulnmng.report import ReportGenerator
 from vulnmng.utils.git_integration import GitIntegration
-from vulnmng.core.models import Severity
+from vulnmng.core.models import Severity, VulnerabilityStatus
 
 logger = logging.getLogger("vulnmng")
 
@@ -25,7 +25,7 @@ def main():
     scan_parser.add_argument("--git-token", help="GitHub token for authentication. Can also use GITHUB_TOKEN env var.")
     scan_parser.add_argument("--target-name", help="Human-readable name for the scan target.")
     scan_parser.add_argument("--log-level", choices=["DEBUG", "INFO", "WARNING", "ERROR", "CRITICAL"], default="WARNING", help="Logging level (default: WARNING)")
-    scan_parser.add_argument("--fail-on", choices=["Low", "Medium", "High", "Critical"], help="Fail if any vulnerability with this severity or higher is found.")
+    scan_parser.add_argument("--fail-on", choices=["None", "Low", "Medium", "High", "Critical"], default="None", help="Fail if any vulnerability with this severity or higher is found (default: None - never fail).")
 
 
     # Report Command
@@ -168,7 +168,7 @@ def main():
             logger.info("Git push completed.")
 
         # 6. Failure Logic
-        if args.fail_on:
+        if args.fail_on and args.fail_on != "None":
             severity_order = {
                 "Low": 1,
                 "Medium": 2,
@@ -186,17 +186,30 @@ def main():
                 Severity.NEGLIGIBLE: 0,
                 Severity.UNKNOWN: 0
             }
-
-            failed_vulns = [
-                v for v in scan_result.vulnerabilities 
-                if model_severity_map.get(v.severity, 0) >= threshold
+            
+            # Statuses that should NOT cause a failure
+            excluded_statuses = {
+                VulnerabilityStatus.FIXED.value,
+                VulnerabilityStatus.FALSE_POSITIVE.value,
+                VulnerabilityStatus.NOT_EXPLOITABLE.value,
+                VulnerabilityStatus.IGNORED.value
+            }
+            
+            # Check issues that meet severity threshold AND are not in excluded status
+            failed_issues = [
+                issue for issue in issues
+                if model_severity_map.get(issue.vulnerability.severity, 0) >= threshold
+                and not any(label in excluded_statuses for label in issue.labels)
             ]
             
-            if failed_vulns:
-                logger.error(f"Found {len(failed_vulns)} vulnerabilities with severity {args.fail_on} or higher.")
+            if failed_issues:
+                logger.error(f"Found {len(failed_issues)} unresolved vulnerabilities with severity {args.fail_on} or higher.")
+                for issue in failed_issues:
+                    status = next((l for l in issue.labels if l.startswith("status:")), "status:unknown")
+                    logger.error(f"  - {issue.cve_id} ({issue.vulnerability.severity.value}) [{status}]")
                 sys.exit(1)
             else:
-                logger.info(f"No vulnerabilities with severity {args.fail_on} or higher found.")
+                logger.info(f"No unresolved vulnerabilities with severity {args.fail_on} or higher found.")
 
     elif args.command == "report":
         # 0. Git Setup

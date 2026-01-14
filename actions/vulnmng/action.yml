@@ -32,8 +32,9 @@ inputs:
     description: 'GitHub token for authentication'
     required: false
   fail-on:
-    description: 'Fail if any vulnerability with this severity or higher is found (Low, Medium, High, Critical)'
+    description: 'Fail if any vulnerability with this severity or higher is found (None, Low, Medium, High, Critical). Default: None - never fail. Excludes vulnerabilities marked as fixed, false-positive, not-exploitable, or ignored.'
     required: false
+    default: 'None'
   extra-args:
     description: 'Additional raw CLI arguments'
     required: false
