@@ -132,3 +132,57 @@ The system strictly enforces a "one status per issue" rule via labels prefixed w
 - **Build**: `make build`
 - **Unit Tests**: `make test`
 - **E2E Tests**: `make e2e`
+
+---
+
+## Contributing & Versioning
+
+This project uses **automatic versioning** based on [Conventional Commits](https://www.conventionalcommits.org/).
+
+### Commit Message Format
+
+When contributing, use conventional commit messages to trigger automatic version bumps:
+
+**Version Bump Types:**
+- **Major (1.0.0 → 2.0.0)**: Breaking changes
+  ```
+  feat!: change --fail-on default behavior
+  fix!: remove deprecated --legacy-mode flag
+  
+  BREAKING CHANGE: Users must now explicitly set --fail-on
+  ```
+
+- **Minor (1.0.0 → 1.1.0)**: New features (backwards compatible)
+  ```
+  feat: add --fail-on None option to never fail
+  feat: add support for SARIF output format
+  ```
+
+- **Patch (1.0.0 → 1.0.1)**: Bug fixes
+  ```
+  fix: resolve issue with status label handling
+  fix: correct EPSS score parsing
+  ```
+
+- **No version bump**: Other changes
+  ```
+  chore: update dependencies
+  docs: improve README examples
+  style: format code with black
+  refactor: simplify git integration logic
+  test: add unit tests for status management
+  ```
+
+### Automatic Release Flow
+
+1. Push commits to `main` using conventional commit format
+2. Auto-version workflow analyzes commits and creates version tag (e.g., `v1.1.0`)
+3. CI builds and pushes Docker images with version tags
+4. Sync workflow updates the public GitHub Action repository
+5. GitHub Action users can reference the new version
+
+**Docker Image Tags:**
+- `latest` - Latest stable release from main branch
+- `dev-latest` - Latest development build
+- `1.0.0`, `1.1.0`, `2.0.0` - Specific semantic versions
+- `sha-abc123` - Commit-specific builds

@@ -2,9 +2,12 @@ name: CI
 
 on:
   push:
-    branches: [ "main", "feature/git-branch-workflows" ]
+    branches-ignore:
+      - 'main'  # Don't run on main - let auto-version create tag which will trigger this
+    tags:
+      - 'v*.*.*'
   pull_request:
-    branches: [ "main", "feature/git-branch-workflows" ]
+    branches: [ "main" ]
   workflow_dispatch:
 
 env:
