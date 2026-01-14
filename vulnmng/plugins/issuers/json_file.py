@@ -34,6 +34,52 @@ class JsonFileIssueManager(IssueManagerBase):
         # Add new status
         labels.append(new_status)
         return labels
+    
+    def _find_issue_by_alias(self, vuln_id: str, target: str) -> Optional[Issue]:
+        """
+        Find an issue where the given vuln_id appears in the aliases list.
+        This is used to detect when a CVE is assigned to an existing non-CVE issue.
+        """
+        for issue in self._issues.values():
+            # Check if this issue is for the same target and has vuln_id in aliases
+            if issue.vulnerability.target == target and vuln_id in issue.aliases:
+                return issue
+        return None
+    
+    def _find_issue_for_renaming(self, vulnerability: Vulnerability) -> Optional[Issue]:
+        """
+        Find an existing issue that should be renamed based on the new vulnerability.
+        This happens when:
+        1. The new vuln's primary ID is in an existing issue's aliases (reverse lookup)
+        2. An existing issue's primary ID is in the new vuln's aliases (forward lookup)
+        
+        Only rename if the new ID is a CVE and the old one is not (CVE prioritization).
+        """
+        target = vulnerability.target
+        new_id = vulnerability.cve_id
+        new_is_cve = new_id.startswith("CVE-")
+        
+        # Check all existing issues for the same target
+        for issue in self._issues.values():
+            if issue.vulnerability.target != target:
+                continue
+            
+            old_id = issue.cve_id
+            old_is_cve = old_id.startswith("CVE-")
+            
+            # Only rename if we're upgrading from non-CVE to CVE
+            if not new_is_cve or old_is_cve:
+                continue
+            
+            # Scenario 1: Existing issue's primary ID is in new vulnerability's aliases
+            if old_id in vulnerability.aliases:
+                return issue
+            
+            # Scenario 2: New vulnerability's ID is in existing issue's aliases
+            if new_id in issue.aliases:
+                return issue
+        
+        return None
 
     def _load(self):
         self._issues = {}
@@ -71,6 +117,12 @@ class JsonFileIssueManager(IssueManagerBase):
                             else:
                                 item["labels"].append(VulnerabilityStatus.NEW.value)
                     
+                    # Migration: ensure aliases field exists
+                    if "aliases" not in item:
+                        item["aliases"] = []
+                    if "vulnerability" in item and "aliases" not in item["vulnerability"]:
+                        item["vulnerability"]["aliases"] = []
+                    
                     issue = Issue(**item)
                     key = issue.id if issue.id else self._generate_id(issue.vulnerability.cve_id, issue.vulnerability.target)
                     self._issues[key] = issue
@@ -107,29 +159,68 @@ class JsonFileIssueManager(IssueManagerBase):
     def create_issue(self, vulnerability: Vulnerability, details: Dict = {}) -> Issue:
         unique_id = self._generate_id(vulnerability.cve_id, vulnerability.target)
         
+        # Check if this issue already exists by the current ID
         if unique_id in self._issues:
-             issue = self._issues[unique_id]
-             # Update logic for existing issue
-             # 1. Ensure status label exists
-             if not self._get_status_from_labels(issue.labels):
-                 issue.labels.append(VulnerabilityStatus.NEW.value)
-             
-             # 2. Overwrite details to remove stale/duplicate data
-             if details:
-                 issue.details = details
-             
-             return issue
+            issue = self._issues[unique_id]
+            # Update logic for existing issue
+            # 1. Ensure status label exists
+            if not self._get_status_from_labels(issue.labels):
+                issue.labels.append(VulnerabilityStatus.NEW.value)
+            
+            # 2. Overwrite details to remove stale/duplicate data
+            if details:
+                issue.details = details
+            
+            # 3. Update aliases if they changed
+            issue.aliases = vulnerability.aliases.copy()
+            issue.vulnerability.aliases = vulnerability.aliases.copy()
+            
+            return issue
+        
+        # Check if we need to rename an existing issue (CVE assignment case)
+        # Two scenarios:
+        # 1. An existing issue's primary ID is in the new vulnerability's aliases
+        # 2. The new vulnerability's ID is in an existing issue's aliases
+        existing_issue = self._find_issue_for_renaming(vulnerability)
+        if existing_issue:
+            # This is a CVE being assigned to an existing non-CVE issue
+            # Rename: move old primary ID to aliases, use new CVE as primary
+            old_id = existing_issue.cve_id
+            logger.info(f"CVE {vulnerability.cve_id} assigned to existing issue {old_id}. Renaming issue.")
+            
+            # Remove old issue entry
+            old_unique_id = existing_issue.id
+            del self._issues[old_unique_id]
+            
+            # Update the issue with new primary ID
+            existing_issue.cve_id = vulnerability.cve_id
+            existing_issue.id = unique_id
+            existing_issue.title = f"{vulnerability.cve_id} - {vulnerability.package_name}"
+            
+            # Update aliases: add old ID if not already there, and include new aliases
+            new_aliases = vulnerability.aliases.copy()
+            if old_id not in new_aliases:
+                new_aliases.insert(0, old_id)  # Put old primary ID first
+            existing_issue.aliases = new_aliases
+            existing_issue.vulnerability = vulnerability
+            existing_issue.vulnerability.aliases = new_aliases
+            existing_issue.updated_at = datetime.now()
+            
+            # Store with new ID
+            self._issues[unique_id] = existing_issue
+            return existing_issue
         
         # Create new issue with status:new label
         initial_labels = [VulnerabilityStatus.NEW.value]
-             
+        
         issue = Issue(
             id=unique_id,
             cve_id=vulnerability.cve_id,
             title=f"{vulnerability.cve_id} - {vulnerability.package_name}",
             vulnerability=vulnerability,
             labels=initial_labels,
-            details=details
+            details=details,
+            aliases=vulnerability.aliases.copy()
         )
         self._issues[unique_id] = issue
         return issue

@@ -31,6 +31,7 @@ class Vulnerability(BaseModel):
     location_id: Optional[str] = None # Identifying where it was found (e.g. path in image)
     target: str # The scan target (e.g. image name or repo path)
     target_name: Optional[str] = None # Human readable identifier
+    aliases: List[str] = [] # Related vulnerability IDs (e.g., GHSA, CGA when CVE is primary, or vice versa)
     
 class ScanResult(BaseModel):
     timestamp: datetime = Field(default_factory=datetime.now)
@@ -57,3 +58,4 @@ class Issue(BaseModel):
     updated_at: datetime = Field(default_factory=datetime.now)
     details: Dict[str, Any] = {}  # Enrichment data
     vulnerability: Vulnerability
+    aliases: List[str] = [] # Related vulnerability IDs (mirrors vulnerability.aliases for convenience)
