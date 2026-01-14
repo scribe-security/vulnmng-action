@@ -4,11 +4,11 @@ on:
   push:
     branches:
       - main
-    paths:
-      - 'vulnmng/**'
-      - 'actions/vulnmng/**'
-      - 'Dockerfile'
-      - 'scripts/**'
+    # paths:
+    #   - 'vulnmng/**'
+    #   - 'actions/vulnmng/**'
+    #   - 'Dockerfile'
+    #   - 'scripts/**'
 
 jobs:
   auto-version:
