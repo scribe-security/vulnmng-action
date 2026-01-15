@@ -63,12 +63,14 @@ if [ "$COMMAND" = "scan" ]; then
     CLI_ARGS="${CLI_ARGS} ${TARGET}"
   fi
   add_flag "--fail-on" "fail-on"
+  add_flag "--enrichment" "enrichment"
   
 elif [ "$COMMAND" = "report" ]; then
   # Report specific flags
   add_flag "--target" "target"
   add_flag "--format-md" "format-md"
   add_flag "--format-csv" "format-csv"
+  add_flag "--enrichment" "enrichment"
 fi
 
 # Extra arguments
