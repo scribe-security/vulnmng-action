@@ -35,6 +35,10 @@ inputs:
     description: 'Fail if any vulnerability with this severity or higher is found (None, Low, Medium, High, Critical). Default: None - never fail. Excludes vulnerabilities marked as fixed, false-positive, not-exploitable, or ignored.'
     required: false
     default: 'None'
+  enrichment:
+    description: 'Comma-separated list of enrichment sources to apply (e.g., "cisa"). Use "none" to disable enrichment. Default: none'
+    required: false
+    default: 'none'
   extra-args:
     description: 'Additional raw CLI arguments'
     required: false

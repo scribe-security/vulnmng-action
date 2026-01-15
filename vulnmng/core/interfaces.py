@@ -35,6 +35,18 @@ class IssueManagerBase(ABC):
 
 class EnhancerBase(ABC):
     @abstractmethod
-    def enhance(self, vulnerability: Vulnerability) -> Vulnerability:
-        """Enhance a vulnerability with external data."""
+    def enhance(self, vulnerability: Vulnerability) -> dict:
+        """Enhance a vulnerability with external data and return enrichment data."""
+        pass
+    
+    @abstractmethod
+    def format_summary(self, enrichment_data: dict) -> str:
+        """Format enrichment data into a markdown summary for display.
+        
+        Args:
+            enrichment_data: The raw enrichment data returned by enhance()
+            
+        Returns:
+            A markdown-formatted string suitable for display in reports
+        """
         pass

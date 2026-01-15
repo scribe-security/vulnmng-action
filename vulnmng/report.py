@@ -63,8 +63,8 @@ class ReportGenerator:
             
             # Table
             f.write("## Vulnerabilities\n")
-            f.write("| Target | Target Name | CVE ID | Package | Version | Severity | Status | Fix Version | User Comment | Description |\n")
-            f.write("|---|---|---|---|---|---|---|---|---|---|\n")
+            f.write("| Target | Target Name | ID | Package | Version | Severity | Status | Fix Version | User Comment | Description | Additional Info |\n")
+            f.write("|---|---|---|---|---|---|---|---|---|---|---|\n")
             
             # Sort by status (new first), then Severity
             sorted_issues = sorted(self.issues, key=lambda x: (
@@ -77,7 +77,31 @@ class ReportGenerator:
                 status = self._get_status_from_labels(issue.labels)
                 desc = (v.description[:80] + '...') if v.description and len(v.description) > 80 else (v.description or "")
                 comment = (issue.user_comment[:50] + '...') if issue.user_comment and len(issue.user_comment) > 50 else (issue.user_comment or "")
-                f.write(f"| {v.target} | {v.target_name or 'N/A'} | {v.cve_id} | {v.package_name} | {v.version} | {v.severity.value} | {status} | {v.fix_version or 'N/A'} | {comment} | {desc} |\n")
+                
+                # Create link for CVE/GHSA
+                cve_id_display = self._format_id_with_link(v.cve_id)
+                
+                # Format additional info for table (truncate if too long)
+                additional_info = ""
+                if issue.additional_info:
+                    # For markdown table, show truncated version with link to details
+                    additional_info = (issue.additional_info[:100] + '...') if len(issue.additional_info) > 100 else issue.additional_info
+                    # Escape pipes in additional info to avoid breaking table
+                    additional_info = additional_info.replace('|', '\\|').replace('\n', ' ')
+                
+                f.write(f"| {v.target} | {v.target_name or 'N/A'} | {cve_id_display} | {v.package_name} | {v.version} | {v.severity.value} | {status} | {v.fix_version or 'N/A'} | {comment} | {desc} | {additional_info} |\n")
+    
+    def _format_id_with_link(self, cve_id: str) -> str:
+        """Format CVE/GHSA ID with appropriate link."""
+        if cve_id.startswith("CVE-"):
+            # Link to NVD
+            return f"[{cve_id}](https://nvd.nist.gov/vuln/detail/{cve_id})"
+        elif cve_id.startswith("GHSA-"):
+            # Link to GitHub Advisory
+            return f"[{cve_id}](https://github.com/advisories/{cve_id})"
+        else:
+            # No link for other types
+            return cve_id
 
     def generate_csv(self, output_path: str = "report.csv"):
         # Ensure directory exists
@@ -85,17 +109,22 @@ class ReportGenerator:
         if dir_path:
             os.makedirs(dir_path, exist_ok=True)
             
-        fieldnames = ['target', 'target_name', 'cve_id', 'package_name', 'version', 'severity', 'status', 'fix_version', 'cvss_score', 'user_comment', 'description']
+        fieldnames = ['target', 'target_name', 'cve_id', 'link', 'package_name', 'version', 'severity', 'status', 'fix_version', 'cvss_score', 'user_comment', 'description', 'additional_info']
         with open(output_path, 'w', newline='') as f:
             writer = csv.DictWriter(f, fieldnames=fieldnames)
             writer.writeheader()
             for issue in self.issues:
                 v = issue.vulnerability
                 status = self._get_status_from_labels(issue.labels)
+                
+                # Generate link for CVE/GHSA
+                link = self._get_id_link(v.cve_id)
+                
                 writer.writerow({
                     'target': v.target,
                     'target_name': v.target_name or '',
                     'cve_id': v.cve_id,
+                    'link': link,
                     'package_name': v.package_name,
                     'version': v.version,
                     'severity': v.severity.value,
@@ -103,5 +132,15 @@ class ReportGenerator:
                     'fix_version': v.fix_version,
                     'cvss_score': v.cvss_score,
                     'user_comment': issue.user_comment or '',
-                    'description': v.description
+                    'description': v.description,
+                    'additional_info': issue.additional_info or ''
                 })
+    
+    def _get_id_link(self, cve_id: str) -> str:
+        """Get the full URL for CVE/GHSA ID."""
+        if cve_id.startswith("CVE-"):
+            return f"https://nvd.nist.gov/vuln/detail/{cve_id}"
+        elif cve_id.startswith("GHSA-"):
+            return f"https://github.com/advisories/{cve_id}"
+        else:
+            return ""

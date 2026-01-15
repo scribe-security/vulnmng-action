@@ -57,5 +57,6 @@ class Issue(BaseModel):
     created_at: datetime = Field(default_factory=datetime.now)
     updated_at: datetime = Field(default_factory=datetime.now)
     details: Dict[str, Any] = {}  # Enrichment data
+    additional_info: Optional[str] = None  # Formatted markdown summary from enrichments
     vulnerability: Vulnerability
     aliases: List[str] = Field(default_factory=list) # Related vulnerability IDs (mirrors vulnerability.aliases for convenience)

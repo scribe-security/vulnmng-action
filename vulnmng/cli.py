@@ -5,6 +5,7 @@ import os
 from vulnmng.plugins.scanners.grype import GrypeScanner
 from vulnmng.plugins.issuers.json_file import JsonFileIssueManager
 from vulnmng.plugins.enhancers.cisa_enrichment import CisaEnrichment
+from vulnmng.plugins.enhancers.registry import EnhancerRegistry
 from vulnmng.report import ReportGenerator
 from vulnmng.utils.git_integration import GitIntegration
 from vulnmng.core.models import Severity, VulnerabilityStatus
@@ -26,6 +27,7 @@ def main():
     scan_parser.add_argument("--target-name", help="Human-readable name for the scan target.")
     scan_parser.add_argument("--log-level", choices=["DEBUG", "INFO", "WARNING", "ERROR", "CRITICAL"], default="WARNING", help="Logging level (default: WARNING)")
     scan_parser.add_argument("--fail-on", choices=["None", "Low", "Medium", "High", "Critical"], default="None", help="Fail if any vulnerability with this severity or higher is found (default: None - never fail).")
+    scan_parser.add_argument("--enrichment", default="none", help="Comma-separated list of enrichment sources to apply (e.g., 'cisa' or 'cisa,other'). Use 'none' to disable enrichment (default: none).")
 
 
     # Report Command
@@ -39,6 +41,7 @@ def main():
     report_parser.add_argument("--git-token", help="GitHub token for authentication. Can also use GITHUB_TOKEN env var.")
     report_parser.add_argument("--target-name", help="Filter report by target name")
     report_parser.add_argument("--log-level", choices=["DEBUG", "INFO", "WARNING", "ERROR", "CRITICAL"], default="WARNING", help="Logging level (default: WARNING)")
+    report_parser.add_argument("--enrichment", default="none", help="Comma-separated list of enrichment sources to apply (e.g., 'cisa' or 'cisa,other'). Use 'none' to disable enrichment (default: none).")
 
     args = parser.parse_args()
 
@@ -109,8 +112,19 @@ def main():
         logger.info(f"Found {len(scan_result.vulnerabilities)} vulnerabilities")
 
         # 2. Enrich
-        enhancers = [CisaEnrichment()] 
-        logger.info("Enriching vulnerabilities...")
+        # Parse enrichment list from argument
+        enrichment_names = [e.strip() for e in args.enrichment.split(',') if e.strip() and e.strip().lower() != 'none']
+        
+        enhancers = []
+        if enrichment_names:
+            try:
+                enhancers = EnhancerRegistry.get_enhancers(enrichment_names)
+                logger.info(f"Applying enrichments: {', '.join(enrichment_names)}")
+            except ValueError as e:
+                logger.error(str(e))
+                sys.exit(1)
+        else:
+            logger.info("No enrichments requested (--enrichment none or not specified)")
         
         enrichment_map = {} # map vuln index/id to data
         
@@ -120,10 +134,9 @@ def main():
                  if extra_data: # Only add if we got data
                     if i not in enrichment_map:
                         enrichment_map[i] = {}
-                    # Namespace the enrichment data
-                    # Assuming we know the enhancer source name, for now hardcoding or we can add `source_name` to enhancer interface
-                    # Using hardcoded "cisagov/vulnrichment" for this specific enhancer instance
-                    enrichment_map[i]["cisagov/vulnrichment"] = extra_data
+                    # Get enhancer name from class
+                    enhancer_name = enhancer.__class__.__name__.lower().replace('enrichment', '')
+                    enrichment_map[i][enhancer_name] = extra_data
 
         # 3. Manage Issues
         if args.format == "json":
@@ -141,6 +154,21 @@ def main():
         for i, vuln in enumerate(scan_result.vulnerabilities):
             details = enrichment_map.get(i, {})
             issue = issue_manager.create_issue(vuln, details=details)
+            
+            # Generate additional_info from enrichment data
+            if details and enhancers:
+                additional_info_parts = []
+                for enhancer in enhancers:
+                    enhancer_name = enhancer.__class__.__name__.lower().replace('enrichment', '')
+                    enrichment_data = details.get(enhancer_name, {})
+                    if enrichment_data:
+                        summary = enhancer.format_summary(enrichment_data)
+                        if summary:
+                            additional_info_parts.append(summary)
+                
+                if additional_info_parts:
+                    issue.additional_info = "\n\n---\n\n".join(additional_info_parts)
+            
             issues.append(issue)
         
         # Extract CVE IDs from scanned vulnerabilities for comparison
@@ -248,6 +276,46 @@ def main():
         if args.target_name:
             all_issues = [i for i in all_issues if i.vulnerability.target_name == args.target_name]
             scans = [s for s in scans if s.target_name == args.target_name]
+        
+        # Apply enrichments if requested
+        enrichment_names = [e.strip() for e in args.enrichment.split(',') if e.strip() and e.strip().lower() != 'none']
+        
+        if enrichment_names:
+            try:
+                enhancers = EnhancerRegistry.get_enhancers(enrichment_names)
+                logger.info(f"Applying enrichments to report: {', '.join(enrichment_names)}")
+                
+                # Enrich issues that don't already have additional_info
+                for issue in all_issues:
+                    if not issue.additional_info:
+                        enrichment_data = {}
+                        for enhancer in enhancers:
+                            extra_data = enhancer.enhance(issue.vulnerability)
+                            if extra_data:
+                                enhancer_name = enhancer.__class__.__name__.lower().replace('enrichment', '')
+                                enrichment_data[enhancer_name] = extra_data
+                        
+                        if enrichment_data:
+                            additional_info_parts = []
+                            for enhancer in enhancers:
+                                enhancer_name = enhancer.__class__.__name__.lower().replace('enrichment', '')
+                                data = enrichment_data.get(enhancer_name, {})
+                                if data:
+                                    summary = enhancer.format_summary(data)
+                                    if summary:
+                                        additional_info_parts.append(summary)
+                            
+                            if additional_info_parts:
+                                issue.additional_info = "\n\n---\n\n".join(additional_info_parts)
+                                # Also update details for persistence
+                                issue.details.update(enrichment_data)
+                
+                # Save updated issues with enrichment data
+                issue_manager.save()
+                
+            except ValueError as e:
+                logger.error(str(e))
+                sys.exit(1)
             
         reporter = ReportGenerator(all_issues, scans)
         

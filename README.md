@@ -98,6 +98,8 @@ docker run --rm \
 | `--git-root` | Path to the Git repository root (enables Git integration) |
 | `--git-branch` | Target branch for storing findings (e.g., `json-issues`) |
 | `--git-token` | GitHub token for pushes (can also use `GITHUB_TOKEN` env) |
+| `--enrichment` | Comma-separated list of enrichment sources (e.g., `cisa`). Use `none` to disable (default: `none`) |
+| `--fail-on` | Fail if any vulnerability with this severity or higher is found (default: `None`) |
 
 ### `report` Command
 | Flag | Description |
@@ -109,6 +111,84 @@ docker run --rm \
 | `--format-csv` | Path to generate a CSV report |
 | `--git-root` | Path to Git root (commits/pushes reports if set) |
 | `--git-branch` | Branch to commit reports to |
+| `--enrichment` | Comma-separated list of enrichment sources to apply during report generation (default: `none`) |
+
+---
+
+## Vulnerability Enrichment
+
+Enrich vulnerability reports with additional intelligence data from external sources to improve prioritization and understanding.
+
+### Available Enrichments
+
+#### CISA Vulnrichment
+
+Fetches data from [CISA Vulnrichment](https://github.com/cisagov/vulnrichment) and the [Known Exploited Vulnerabilities (KEV) catalog](https://www.cisa.gov/known-exploited-vulnerabilities-catalog):
+
+**Enriched data includes:**
+- **KEV Status**: Whether the vulnerability is in CISA's Known Exploited Vulnerabilities catalog
+- **Exploitability**: Links to public exploits and exploit code maturity
+- **CVSS Vectors**: Full CVSS v2, v3.0, and v3.1 vector strings
+- **SSVC Decision Points**: Stakeholder-specific Vulnerability Categorization data
+- **Ransomware Usage**: Indicators of known ransomware campaign usage
+
+### Usage Examples
+
+**Scan with enrichment:**
+```bash
+docker run --rm \
+  -v $(pwd):/workspace \
+  -w /workspace \
+  ghcr.io/scribe-security/vulnmng:latest \
+  scan /workspace \
+  --enrichment cisa \
+  --json-path /workspace/issues.json
+```
+
+**Generate enriched report:**
+```bash
+docker run --rm \
+  -v $(pwd):/workspace \
+  -w /workspace \
+  ghcr.io/scribe-security/vulnmng:latest \
+  report \
+  --enrichment cisa \
+  --format-md /workspace/report.md \
+  --format-csv /workspace/report.csv
+```
+
+**Multiple enrichments (future):**
+```bash
+# Comma-separated list for sequential enrichment
+--enrichment cisa,other
+```
+
+### Enrichment Output
+
+Enriched data appears in three places:
+
+1. **Markdown Reports**: `Additional Info` column with formatted summaries including links
+2. **CSV Reports**: `additional_info` column with full markdown text, plus separate `link` column
+3. **JSON Database**: `additional_info` field stores formatted summary, `details` field stores raw data
+
+**Example enrichment summary:**
+```markdown
+### CISA Vulnrichment Data
+
+🚨 Known Exploited Vulnerability (KEV)
+- Vulnerability Name: Apache Log4j2 Remote Code Execution
+- Date Added to KEV: 2021-12-10
+- Due Date: 2021-12-24
+- Required Action: Apply updates per vendor instructions
+- ⚠️ Known Ransomware Campaign Use
+
+CVSS Information:
+- CVSS v3.1: 10.0 (CRITICAL)
+  - Vector: `CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:C/C:H/I:H/A:H`
+
+Exploit References:
+- [Proof of Concept](https://github.com/example/poc)
+```
 
 ---
 
