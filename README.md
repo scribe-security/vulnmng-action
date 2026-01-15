@@ -128,6 +128,49 @@ The system strictly enforces a "one status per issue" rule via labels prefixed w
 
 ---
 
+## Vulnerability ID Handling & Aliases
+
+VulnMng intelligently handles multiple vulnerability identifier types (CVE, GHSA, CGA, etc.) and manages their relationships.
+
+### ID Prioritization
+
+When a vulnerability is detected with multiple identifiers, VulnMng applies the following priority:
+
+1. **CVE-ID First**: If a CVE identifier exists (e.g., `CVE-2024-1234`), it becomes the primary ID
+2. **Other IDs as Aliases**: Related identifiers (GHSA, CGA, etc.) are stored in the `aliases` field
+3. **Non-CVE Primary**: If no CVE exists, the scanner's primary identifier is used (e.g., `GHSA-xxxx-yyyy-zzzz`)
+
+### CVE Assignment Flow
+
+When a CVE is later assigned to an existing vulnerability:
+
+1. **Automatic Renaming**: The issue is automatically renamed to use the CVE as primary ID
+2. **Alias Preservation**: The previous identifier moves to the `aliases` list
+3. **History Maintained**: All status labels and triage comments are preserved
+
+**Example:**
+```json
+// Initial scan finds GHSA-1234-5678-9012
+{
+  "cve_id": "GHSA-1234-5678-9012",
+  "aliases": ["CGA-9999-8888-7777"]
+}
+
+// Later scan finds CVE was assigned
+{
+  "cve_id": "CVE-2024-9999",
+  "aliases": ["GHSA-1234-5678-9012", "CGA-9999-8888-7777"]
+}
+```
+
+### Benefits
+
+- **Unified Tracking**: One issue per vulnerability, regardless of identifier changes
+- **CVE Priority**: Users prioritize CVEs, so they automatically become primary when available
+- **Full Traceability**: All related identifiers are tracked in aliases for cross-referencing
+
+---
+
 ## Development
 - **Build**: `make build`
 - **Unit Tests**: `make test`
