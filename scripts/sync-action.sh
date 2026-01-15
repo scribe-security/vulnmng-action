@@ -17,9 +17,18 @@ fi
 TARGET_BRANCH="main"
 VULNMNG_TAG="latest"
 
+# If version tag is provided, use it for VULNMNG_TAG
+if [ -n "$VERSION_TAG" ]; then
+  # Remove 'v' prefix for Docker tag (e.g., v1.0.0 -> 1.0.0)
+  VULNMNG_TAG="${VERSION_TAG#v}"
+fi
+
 if [ "$SYNC_MODE" = "dev" ]; then
   TARGET_BRANCH="dev"
-  VULNMNG_TAG="dev-latest"
+  # Only use dev-latest if no version tag provided
+  if [ -z "$VERSION_TAG" ]; then
+    VULNMNG_TAG="dev-latest"
+  fi
 fi
 
 echo "Syncing ${ACTION_PATH} to ${PUBLIC_REPO_URL} (Mode: ${SYNC_MODE}, Target: ${TARGET_BRANCH})..."
@@ -28,12 +37,16 @@ echo "Syncing ${ACTION_PATH} to ${PUBLIC_REPO_URL} (Mode: ${SYNC_MODE}, Target: 
 echo "Creating subtree split..."
 git subtree split --prefix="${ACTION_PATH}" -b "${TEMP_BRANCH}"
 
-# 2. Patch Dockerfile if in dev mode
+# 2. Patch Dockerfile with correct version tag
+echo "Patching Dockerfile for version ${VULNMNG_TAG}..."
+git checkout "${TEMP_BRANCH}"
+
+# Update ARG and FROM line with the correct version
+sed -i "s/ARG VULNMNG_VERSION=latest/ARG VULNMNG_VERSION=${VULNMNG_TAG}/g" Dockerfile
+sed -i "s/vulnmng:\${VULNMNG_VERSION}/vulnmng:${VULNMNG_TAG}/g" Dockerfile
+
 if [ "$SYNC_MODE" = "dev" ]; then
-  echo "Patching Dockerfile for dev-latest..."
-  git checkout "${TEMP_BRANCH}"
-  # Replace latest with dev-latest in FROM line
-  sed -i "s/vulnmng:latest/vulnmng:${VULNMNG_TAG}/g" Dockerfile
+  echo "Applying dev mode patches..."
   
   # Replace @main with @dev in test.yml
   TEST_WF=".github/workflows/test.yml"
@@ -42,11 +55,16 @@ if [ "$SYNC_MODE" = "dev" ]; then
     sed -i "s/@main/@dev/g" "$TEST_WF"
     git add "$TEST_WF"
   fi
-  
-  git add Dockerfile
-  git commit -m "chore: patch Dockerfile and test.yml for dev mode"
-  git checkout - # Go back to original branch
 fi
+
+# Commit Dockerfile changes
+git add Dockerfile
+if [ -n "$VERSION_TAG" ]; then
+  git commit -m "chore: patch Dockerfile for version ${VERSION_TAG}"
+else
+  git commit -m "chore: patch Dockerfile for ${SYNC_MODE} mode"
+fi
+git checkout - # Go back to original branch
 
 # 3. Push to public repo
 echo "Pushing to public repository branch ${TARGET_BRANCH}..."
