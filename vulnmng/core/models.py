@@ -32,6 +32,7 @@ class Vulnerability(BaseModel):
     target: str # The scan target (e.g. image name or repo path)
     target_name: Optional[str] = None # Human readable identifier
     aliases: List[str] = Field(default_factory=list) # Related vulnerability IDs (e.g., GHSA, CGA when CVE is primary, or vice versa)
+    ecosystem: Optional[str] = None # Package ecosystem (e.g., npm, pypi, go, maven)
     
 class ScanResult(BaseModel):
     timestamp: datetime = Field(default_factory=datetime.now)

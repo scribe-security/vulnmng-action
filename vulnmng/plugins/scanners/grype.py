@@ -48,6 +48,9 @@ class GrypeScanner(ScannerBase):
             
             # Extract primary ID and aliases (pass entire match, not just vuln_data)
             primary_id, aliases = self._extract_ids(match)
+            
+            # Extract ecosystem/language
+            ecosystem = artifact.get("type") or artifact.get("language")
                 
             vuln = Vulnerability(
                 cve_id=primary_id,
@@ -59,7 +62,8 @@ class GrypeScanner(ScannerBase):
                 cvss_score=self._get_cvss(vuln_data),
                 location_id=location_id,
                 target=target,
-                aliases=aliases
+                aliases=aliases,
+                ecosystem=ecosystem
             )
             vulns.append(vuln)
         return vulns

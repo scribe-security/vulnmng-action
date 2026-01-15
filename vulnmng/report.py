@@ -81,13 +81,16 @@ class ReportGenerator:
                 # Create link for CVE/GHSA
                 cve_id_display = self._format_id_with_link(v.cve_id)
                 
+                # Create link for package with deps.dev
+                package_display = self._format_package_with_link(v.package_name, v.version, v.ecosystem)
+                
                 # Format additional info for table
                 additional_info = ""
                 if issue.additional_info:
                     # Escape pipes in additional info to avoid breaking table
                     additional_info = issue.additional_info.replace('|', '\\|').replace('\n', ' ')
                 
-                f.write(f"| {v.target} | {v.target_name or 'N/A'} | {cve_id_display} | {v.package_name} | {v.version} | {v.severity.value} | {status} | {v.fix_version or 'N/A'} | {comment} | {desc} | {additional_info} |\n")
+                f.write(f"| {v.target} | {v.target_name or 'N/A'} | {cve_id_display} | {package_display} | {v.version} | {v.severity.value} | {status} | {v.fix_version or 'N/A'} | {comment} | {desc} | {additional_info} |\n")
     
     def _format_id_with_link(self, cve_id: str) -> str:
         """Format CVE/GHSA ID with appropriate link."""
@@ -100,6 +103,37 @@ class ReportGenerator:
         else:
             # No link for other types
             return cve_id
+    
+    def _format_package_with_link(self, package_name: str, version: str, ecosystem: str = None) -> str:
+        """Format package name with link to deps.dev if ecosystem is known."""
+        if not ecosystem:
+            return package_name
+        
+        # Map grype ecosystem names to deps.dev format
+        ecosystem_map = {
+            'npm': 'npm',
+            'python': 'pypi',
+            'gem': 'gem',
+            'java-archive': 'maven',
+            'go-module': 'go',
+            'apk': 'alpine',
+            'deb': 'debian',
+            'rpm': 'rpm',
+        }
+        
+        deps_ecosystem = ecosystem_map.get(ecosystem.lower(), ecosystem.lower())
+        
+        # deps.dev URL format: https://deps.dev/{ecosystem}/{package}/{version}
+        # For some ecosystems, we need special handling
+        if deps_ecosystem in ['npm', 'pypi', 'gem', 'maven', 'go']:
+            # URL encode package name for special characters
+            import urllib.parse
+            encoded_package = urllib.parse.quote(package_name, safe='')
+            deps_url = f"https://deps.dev/{deps_ecosystem}/{encoded_package}/{version}"
+            return f"[{package_name}]({deps_url})"
+        
+        # For other ecosystems, just return the package name without link
+        return package_name
 
     def generate_csv(self, output_path: str = "report.csv"):
         # Ensure directory exists
@@ -107,7 +141,7 @@ class ReportGenerator:
         if dir_path:
             os.makedirs(dir_path, exist_ok=True)
             
-        fieldnames = ['target', 'target_name', 'cve_id', 'link', 'package_name', 'version', 'severity', 'status', 'fix_version', 'cvss_score', 'user_comment', 'description', 'additional_info']
+        fieldnames = ['target', 'target_name', 'cve_id', 'link', 'package_name', 'package_link', 'version', 'severity', 'status', 'fix_version', 'cvss_score', 'user_comment', 'description', 'additional_info']
         with open(output_path, 'w', newline='') as f:
             writer = csv.DictWriter(f, fieldnames=fieldnames)
             writer.writeheader()
@@ -118,12 +152,16 @@ class ReportGenerator:
                 # Generate link for CVE/GHSA
                 link = self._get_id_link(v.cve_id)
                 
+                # Generate link for package
+                package_link = self._get_package_link(v.package_name, v.version, v.ecosystem)
+                
                 writer.writerow({
                     'target': v.target,
                     'target_name': v.target_name or '',
                     'cve_id': v.cve_id,
                     'link': link,
                     'package_name': v.package_name,
+                    'package_link': package_link,
                     'version': v.version,
                     'severity': v.severity.value,
                     'status': status,
@@ -142,3 +180,30 @@ class ReportGenerator:
             return f"https://github.com/advisories/{cve_id}"
         else:
             return ""
+    
+    def _get_package_link(self, package_name: str, version: str, ecosystem: str = None) -> str:
+        """Get the full URL for package on deps.dev."""
+        if not ecosystem:
+            return ""
+        
+        # Map grype ecosystem names to deps.dev format
+        ecosystem_map = {
+            'npm': 'npm',
+            'python': 'pypi',
+            'gem': 'gem',
+            'java-archive': 'maven',
+            'go-module': 'go',
+            'apk': 'alpine',
+            'deb': 'debian',
+            'rpm': 'rpm',
+        }
+        
+        deps_ecosystem = ecosystem_map.get(ecosystem.lower(), ecosystem.lower())
+        
+        # deps.dev URL format: https://deps.dev/{ecosystem}/{package}/{version}
+        if deps_ecosystem in ['npm', 'pypi', 'gem', 'maven', 'go']:
+            import urllib.parse
+            encoded_package = urllib.parse.quote(package_name, safe='')
+            return f"https://deps.dev/{deps_ecosystem}/{encoded_package}/{version}"
+        
+        return ""
