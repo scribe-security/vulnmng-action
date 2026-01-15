@@ -143,6 +143,14 @@ def main():
             issue = issue_manager.create_issue(vuln, details=details)
             issues.append(issue)
         
+        # Extract CVE IDs from scanned vulnerabilities for comparison
+        scanned_cve_ids = [vuln.cve_id for vuln in scan_result.vulnerabilities]
+        
+        # Mark vulnerabilities that didn't appear in this scan as fixed
+        fixed_count = issue_manager.mark_missing_vulnerabilities_as_fixed(args.target, scanned_cve_ids)
+        if fixed_count > 0:
+            logger.info(f"Marked {fixed_count} missing vulnerabilities as fixed")
+        
         # Record Scan Metadata
         issue_manager.record_scan(args.target, "grype", len(issues), target_name=target_name)
         
