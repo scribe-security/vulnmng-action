@@ -1,6 +1,12 @@
 name: Sync to Public Repo
 
 on:
+  workflow_run:
+    workflows: ["CI"]
+    types:
+      - completed
+    branches:
+      - main
   push:
     branches:
       - main
@@ -43,6 +49,21 @@ jobs:
           fetch-depth: 0
           persist-credentials: false
 
+      - name: Extract Version Tag
+        id: extract_version
+        run: |
+          VERSION_TAG="${{ inputs.version_tag }}"
+          
+          # If triggered by workflow_run, get the latest tag
+          if [[ "${{ github.event_name }}" == "workflow_run" && -z "$VERSION_TAG" ]]; then
+            VERSION_TAG=$(git tag -l "v*.*.*" --sort=-v:refname | head -n 1)
+            if [ -n "$VERSION_TAG" ]; then
+              echo "Found version tag from workflow_run: $VERSION_TAG"
+            fi
+          fi
+          
+          echo "version_tag=$VERSION_TAG" >> $GITHUB_OUTPUT
+
       - name: Debug Directory
         run: |
           ls -R actions/vulnmng
@@ -65,12 +86,12 @@ jobs:
         run: |
           # Determine mode and version tag
           MODE="dev"
-          VERSION_TAG="${{ inputs.version_tag }}"
+          VERSION_TAG="${{ steps.extract_version.outputs.version_tag }}"
           
           # Determine mode based on trigger
           if [[ "${{ github.event_name }}" == "workflow_call" ]]; then
             MODE="${{ inputs.mode }}"
-          elif [[ "${{ github.event_name }}" == "push" && "${{ github.ref }}" == "refs/heads/main" ]]; then
+          elif [[ "${{ github.event_name }}" == "workflow_run" || ("${{ github.event_name }}" == "push" && "${{ github.ref }}" == "refs/heads/main") ]]; then
             MODE="prod"
           elif [[ "${{ github.event_name }}" == "workflow_dispatch" ]]; then
             MODE="${{ inputs.mode }}"

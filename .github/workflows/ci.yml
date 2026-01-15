@@ -7,6 +7,12 @@ on:
       - 'v*.*.*'
   pull_request:
     branches: [ "main" ]
+  workflow_run:
+    workflows: ["Auto Version"]
+    types:
+      - completed
+    branches:
+      - main
   workflow_dispatch:
     inputs:
       version_tag:
@@ -49,9 +55,29 @@ jobs:
     permissions:
       contents: read
       packages: write
+    outputs:
+      version_tag: ${{ steps.extract_version.outputs.version_tag }}
     
     steps:
     - uses: actions/checkout@v4
+    
+    - name: Extract Version Tag
+      id: extract_version
+      run: |
+        VERSION_TAG=""
+        # Check if triggered by tag push
+        if [[ "${{ github.ref }}" == refs/tags/v*.*.* ]]; then
+          VERSION_TAG="${GITHUB_REF#refs/tags/}"
+        # Check for latest tag if triggered by auto-version
+        elif [[ "${{ github.event_name }}" == "workflow_run" ]]; then
+          VERSION_TAG=$(git tag -l "v*.*.*" --sort=-v:refname | head -n 1)
+        fi
+        echo "version_tag=$VERSION_TAG" >> $GITHUB_OUTPUT
+        if [ -n "$VERSION_TAG" ]; then
+          echo "Building for version: $VERSION_TAG"
+        else
+          echo "Building for branch: ${{ github.ref_name }}"
+        fi
     
     - name: Log in to GitHub Container Registry
       uses: docker/login-action@v3
