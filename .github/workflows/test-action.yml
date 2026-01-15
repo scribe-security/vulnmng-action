@@ -30,6 +30,22 @@ jobs:
           # For local action testing within this workflow, we might also need a consistent local tag
           docker tag ghcr.io/scribe-security/vulnmng:$TAG ghcr.io/scribe-security/vulnmng:latest
 
+      - name: Create Test Package with Known Vulnerabilities
+        run: |
+          cat > package.json << 'EOF'
+          {
+            "name": "test-vulnerable-app",
+            "version": "1.0.0",
+            "dependencies": {
+              "log4js": "6.3.0",
+              "axios": "0.21.1",
+              "lodash": "4.17.19",
+              "minimist": "1.2.5"
+            }
+          }
+          EOF
+          cat package.json
+
       - name: Run Scan Action (Self-Test)
         uses: ./actions/vulnmng
         env:
@@ -38,6 +54,7 @@ jobs:
           command: 'scan'
           target: '.'
           target-name: 'monorepo-test'
+          enrichment: 'cisa'
           # Verify git integration works in test
           git-root: '.'
           git-branch: 'test-issues'
@@ -54,6 +71,7 @@ jobs:
           VULNMNG_DEBUG: 'true'
         with:
           command: 'report'
+          enrichment: 'cisa'
           format-md: 'test-report.md'
           format-csv: 'test-report.csv'
           git-root: '.'

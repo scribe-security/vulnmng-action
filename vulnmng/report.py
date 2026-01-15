@@ -75,19 +75,17 @@ class ReportGenerator:
             for issue in sorted_issues:
                 v = issue.vulnerability
                 status = self._get_status_from_labels(issue.labels)
-                desc = (v.description[:80] + '...') if v.description and len(v.description) > 80 else (v.description or "")
-                comment = (issue.user_comment[:50] + '...') if issue.user_comment and len(issue.user_comment) > 50 else (issue.user_comment or "")
+                desc = v.description or ""
+                comment = issue.user_comment or ""
                 
                 # Create link for CVE/GHSA
                 cve_id_display = self._format_id_with_link(v.cve_id)
                 
-                # Format additional info for table (truncate if too long)
+                # Format additional info for table
                 additional_info = ""
                 if issue.additional_info:
-                    # For markdown table, show truncated version with link to details
-                    additional_info = (issue.additional_info[:100] + '...') if len(issue.additional_info) > 100 else issue.additional_info
                     # Escape pipes in additional info to avoid breaking table
-                    additional_info = additional_info.replace('|', '\\|').replace('\n', ' ')
+                    additional_info = issue.additional_info.replace('|', '\\|').replace('\n', ' ')
                 
                 f.write(f"| {v.target} | {v.target_name or 'N/A'} | {cve_id_display} | {v.package_name} | {v.version} | {v.severity.value} | {status} | {v.fix_version or 'N/A'} | {comment} | {desc} | {additional_info} |\n")
     
