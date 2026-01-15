@@ -57,15 +57,15 @@ class TestGrypeScanner(unittest.TestCase):
                         "id": "CVE-2023-5678",
                         "severity": "High",
                         "description": "Test vuln with aliases",
-                        "relatedVulnerabilities": [
-                            {"id": "GHSA-xxxx-yyyy-zzzz"},
-                            {"id": "CGA-1234-5678-9012"}
-                        ],
                         "fix": {
                             "state": "fixed",
                             "versions": ["2.0.0"]
                         }
                     },
+                    "relatedVulnerabilities": [
+                        {"id": "GHSA-xxxx-yyyy-zzzz"},
+                        {"id": "CGA-1234-5678-9012"}
+                    ],
                     "artifact": {
                         "name": "package-b",
                         "version": "1.5.0",
@@ -92,11 +92,11 @@ class TestGrypeScanner(unittest.TestCase):
                     "vulnerability": {
                         "id": "GHSA-abcd-efgh-ijkl",
                         "severity": "Low",
-                        "description": "Non-CVE vuln",
-                        "relatedVulnerabilities": [
-                            {"id": "CGA-9999-8888-7777"}
-                        ]
+                        "description": "Non-CVE vuln"
                     },
+                    "relatedVulnerabilities": [
+                        {"id": "CGA-9999-8888-7777"}
+                    ],
                     "artifact": {
                         "name": "package-c",
                         "version": "3.0.0",
@@ -121,12 +121,12 @@ class TestGrypeScanner(unittest.TestCase):
                     "vulnerability": {
                         "id": "GHSA-1111-2222-3333",
                         "severity": "Critical",
-                        "description": "GHSA with CVE in related",
-                        "relatedVulnerabilities": [
-                            {"id": "CVE-2024-9999"},
-                            {"id": "CGA-4444-5555-6666"}
-                        ]
+                        "description": "GHSA with CVE in related"
                     },
+                    "relatedVulnerabilities": [
+                        {"id": "CVE-2024-9999"},
+                        {"id": "CGA-4444-5555-6666"}
+                    ],
                     "artifact": {
                         "name": "package-d",
                         "version": "0.5.0",

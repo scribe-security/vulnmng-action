@@ -93,12 +93,12 @@ def test_e2e_alias_handling():
                     "vulnerability": {
                         "id": "GHSA-abcd-efgh-ijkl",
                         "severity": "Medium",
-                        "description": "Scanner found GHSA first",
-                        "relatedVulnerabilities": [
-                            {"id": "CVE-2024-5555"},
-                            {"id": "CGA-6666-7777-8888"}
-                        ]
+                        "description": "Scanner found GHSA first"
                     },
+                    "relatedVulnerabilities": [
+                        {"id": "CVE-2024-5555"},
+                        {"id": "CGA-6666-7777-8888"}
+                    ],
                     "artifact": {
                         "name": "another-package",
                         "version": "2.0.0",
@@ -127,11 +127,11 @@ def test_e2e_alias_handling():
                     "vulnerability": {
                         "id": "GHSA-zzzz-yyyy-xxxx",
                         "severity": "Low",
-                        "description": "Only GHSA available",
-                        "relatedVulnerabilities": [
-                            {"id": "CGA-1111-2222-3333"}
-                        ]
+                        "description": "Only GHSA available"
                     },
+                    "relatedVulnerabilities": [
+                        {"id": "CGA-1111-2222-3333"}
+                    ],
                     "artifact": {
                         "name": "third-package",
                         "version": "3.0.0",

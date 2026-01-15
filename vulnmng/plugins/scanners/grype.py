@@ -46,8 +46,8 @@ class GrypeScanner(ScannerBase):
             except ValueError:
                 severity = Severity.UNKNOWN
             
-            # Extract primary ID and aliases
-            primary_id, aliases = self._extract_ids(vuln_data)
+            # Extract primary ID and aliases (pass entire match, not just vuln_data)
+            primary_id, aliases = self._extract_ids(match)
                 
             vuln = Vulnerability(
                 cve_id=primary_id,
@@ -82,16 +82,20 @@ class GrypeScanner(ScannerBase):
             return float(metrics[0].get("metrics", {}).get("baseScore", 0.0))
         return None
     
-    def _extract_ids(self, vuln_data: dict) -> tuple[str, list[str]]:
+    def _extract_ids(self, match: dict) -> tuple[str, list[str]]:
         """
-        Extract primary vulnerability ID and aliases.
+        Extract primary vulnerability ID and aliases from a grype match.
         Prioritizes CVE-ID over other identifiers (GHSA, CGA, etc.).
         
+        Args:
+            match: The full match object from grype output
+            
         Returns:
             tuple: (primary_id, aliases_list)
         """
+        vuln_data = match.get("vulnerability", {})
         primary_id = vuln_data.get("id", "")
-        related = vuln_data.get("relatedVulnerabilities", [])
+        related = match.get("relatedVulnerabilities", [])  # This is at match level, not vuln level!
         
         all_ids = [primary_id]
         if related:
