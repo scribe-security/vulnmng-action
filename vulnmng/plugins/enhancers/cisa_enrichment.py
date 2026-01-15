@@ -116,94 +116,85 @@ class CisaEnrichment(EnhancerBase):
         # TODO: Add more specific enrichment fields if needed (e.g. kev, ssvc)
     
     def format_summary(self, enrichment_data: dict) -> str:
-        """Format CISA enrichment data into markdown summary."""
+        """Format CISA enrichment data into compact text summary."""
         if not enrichment_data:
             return ""
         
-        summary_parts = []
-        
-        # Add title with link to CISA vulnrichment
-        cve_id = enrichment_data.get("cveMetadata", {}).get("cveId")
-        if cve_id:
-            summary_parts.append(f"### [CISA Vulnrichment Data](https://github.com/cisagov/vulnrichment)")
-        else:
-            summary_parts.append("### CISA Vulnrichment Data")
+        parts = []
         
         # KEV Information
         kev_entry = enrichment_data.get("kev")
         if kev_entry:
-            summary_parts.append("\n**🚨 Known Exploited Vulnerability (KEV)**")
-            summary_parts.append(f"- **Vulnerability Name:** {kev_entry.get('vulnerabilityName', 'N/A')}")
-            summary_parts.append(f"- **Date Added to KEV:** {kev_entry.get('dateAdded', 'N/A')}")
-            summary_parts.append(f"- **Due Date:** {kev_entry.get('dueDate', 'N/A')}")
-            summary_parts.append(f"- **Required Action:** {kev_entry.get('requiredAction', 'N/A')}")
+            kev_info = f"KEV: {kev_entry.get('vulnerabilityName', 'N/A')}"
             if kev_entry.get('knownRansomwareCampaignUse') == 'Known':
-                summary_parts.append("- **⚠️ Known Ransomware Campaign Use**")
+                kev_info += " (Ransomware)"
+            parts.append(kev_info)
         
         # CVSS Vectors and Exploitability
         containers = enrichment_data.get("containers", {})
         cna = containers.get("cna", {})
         metrics = cna.get("metrics", [])
         
-        if metrics:
-            summary_parts.append("\n**CVSS Information:**")
-            for metric in metrics:
-                cvss_v3_1 = metric.get("cvssV3_1", {})
-                if cvss_v3_1:
-                    vector_string = cvss_v3_1.get("vectorString", "N/A")
-                    base_score = cvss_v3_1.get("baseScore", "N/A")
-                    base_severity = cvss_v3_1.get("baseSeverity", "N/A")
-                    summary_parts.append(f"- **CVSS v3.1:** {base_score} ({base_severity})")
-                    summary_parts.append(f"  - Vector: `{vector_string}`")
-                    
-                    # Exploitability info from CVSS
-                    exploit_code = cvss_v3_1.get("exploitCodeMaturity")
-                    if exploit_code:
-                        summary_parts.append(f"  - Exploit Code Maturity: {exploit_code}")
-                
-                cvss_v3_0 = metric.get("cvssV3_0", {})
-                if cvss_v3_0:
-                    vector_string = cvss_v3_0.get("vectorString", "N/A")
-                    base_score = cvss_v3_0.get("baseScore", "N/A")
-                    summary_parts.append(f"- **CVSS v3.0:** {base_score}")
-                    summary_parts.append(f"  - Vector: `{vector_string}`")
-                
-                cvss_v2 = metric.get("cvssV2_0", {})
-                if cvss_v2:
-                    vector_string = cvss_v2.get("vectorString", "N/A")
-                    base_score = cvss_v2.get("baseScore", "N/A")
-                    summary_parts.append(f"- **CVSS v2.0:** {base_score}")
-                    summary_parts.append(f"  - Vector: `{vector_string}`")
+        cvss_parts = []
+        for metric in metrics:
+            cvss_v3_1 = metric.get("cvssV3_1", {})
+            if cvss_v3_1:
+                vector_string = cvss_v3_1.get("vectorString", "N/A")
+                base_score = cvss_v3_1.get("baseScore", "N/A")
+                base_severity = cvss_v3_1.get("baseSeverity", "N/A")
+                cvss_parts.append(f"CVSS v3.1: {base_score} ({base_severity}) {vector_string}")
+            
+            cvss_v3_0 = metric.get("cvssV3_0", {})
+            if cvss_v3_0:
+                vector_string = cvss_v3_0.get("vectorString", "N/A")
+                base_score = cvss_v3_0.get("baseScore", "N/A")
+                cvss_parts.append(f"CVSS v3.0: {base_score} {vector_string}")
+            
+            cvss_v2 = metric.get("cvssV2_0", {})
+            if cvss_v2:
+                vector_string = cvss_v2.get("vectorString", "N/A")
+                base_score = cvss_v2.get("baseScore", "N/A")
+                cvss_parts.append(f"CVSS v2.0: {base_score} {vector_string}")
+        
+        if cvss_parts:
+            parts.extend(cvss_parts)
         
         # References and Exploits
         references = cna.get("references", [])
         exploit_refs = [ref for ref in references if any(tag in ref.get("tags", []) for tag in ["exploit", "Exploit"])]
         
         if exploit_refs:
-            summary_parts.append("\n**Exploit References:**")
-            for ref in exploit_refs:
-                url = ref.get("url", "N/A")
-                name = ref.get("name", url)
-                summary_parts.append(f"- [{name}]({url})")
+            exploit_count = len(exploit_refs)
+            parts.append(f"Exploits: {exploit_count} available")
         
-        # ADP information (additional analysis)
+        # SSVC Decision Points
         adp_list = containers.get("adp", [])
+        ssvc_parts = []
         for adp in adp_list:
-            provider_metadata = adp.get("providerMetadata", {})
-            org_id = provider_metadata.get("orgId", "")
-            
-            # Check for SSVC decision points
             if "metrics" in adp:
                 for adp_metric in adp.get("metrics", []):
                     ssvc = adp_metric.get("other", {})
                     if ssvc.get("type") == "ssvc":
-                        summary_parts.append("\n**SSVC Decision Points:**")
                         content = ssvc.get("content", {})
-                        for key, value in content.items():
-                            if isinstance(value, dict):
-                                for sub_key, sub_value in value.items():
-                                    summary_parts.append(f"- {sub_key}: {sub_value}")
-                            else:
-                                summary_parts.append(f"- {key}: {value}")
+                        # Extract options if they exist
+                        if "options" in content and isinstance(content["options"], list):
+                            for option in content["options"]:
+                                if isinstance(option, dict):
+                                    for k, v in option.items():
+                                        ssvc_parts.append(f"{k}: {v}")
+                        else:
+                            # Extract key SSVC values from other fields
+                            for key, value in content.items():
+                                if isinstance(value, dict):
+                                    for sub_key, sub_value in value.items():
+                                        if sub_key in ['Exploitation', 'Automatable', 'Technical Impact']:
+                                            ssvc_parts.append(f"{sub_key}: {sub_value}")
+                                elif key in ['id', 'role', 'version', 'timestamp']:
+                                    continue  # Skip metadata
+                                else:
+                                    ssvc_parts.append(f"{key}: {value}")
         
-        return "\n".join(summary_parts) if summary_parts else ""
+        if ssvc_parts:
+            parts.append("SSVC: " + ", ".join(ssvc_parts))
+        
+        return " | ".join(parts) if parts else ""

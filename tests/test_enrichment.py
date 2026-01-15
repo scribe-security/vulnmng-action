@@ -93,18 +93,15 @@ class TestCisaEnrichment(unittest.TestCase):
         
         summary = enhancer.format_summary(enrichment_data)
         
-        # Check that key elements are present
-        self.assertIn("CISA Vulnrichment Data", summary)
-        self.assertIn("Known Exploited Vulnerability", summary)
+        # Check that key elements are present in compact format
+        self.assertIn("KEV:", summary)
         self.assertIn("Test Vulnerability", summary)
-        self.assertIn("2024-01-01", summary)
-        self.assertIn("Known Ransomware Campaign Use", summary)
+        self.assertIn("Ransomware", summary)
         self.assertIn("CVSS v3.1", summary)
         self.assertIn("9.8", summary)
         self.assertIn("CRITICAL", summary)
         self.assertIn("CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:H/I:H/A:H", summary)
-        self.assertIn("Exploit References", summary)
-        self.assertIn("PoC Exploit", summary)
+        self.assertIn("Exploits:", summary)
     
     def test_format_summary_no_data(self):
         enhancer = CisaEnrichment()
@@ -123,7 +120,8 @@ class TestCisaEnrichment(unittest.TestCase):
         }
         
         summary = enhancer.format_summary(enrichment_data)
-        self.assertIn("CISA Vulnrichment Data", summary)
+        # With no metrics, KEV, or exploits, summary should be empty
+        self.assertEqual(summary, "")
 
 if __name__ == '__main__':
     unittest.main()

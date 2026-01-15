@@ -88,7 +88,7 @@ class ReportGenerator:
                 additional_info = ""
                 if issue.additional_info:
                     # Escape pipes in additional info to avoid breaking table
-                    additional_info = issue.additional_info.replace('|', '\\|').replace('\n', ' ')
+                    additional_info = issue.additional_info.replace('|', '\\|')
                 
                 f.write(f"| {v.target} | {v.target_name or 'N/A'} | {cve_id_display} | {package_display} | {v.version} | {v.severity.value} | {status} | {v.fix_version or 'N/A'} | {comment} | {desc} | {additional_info} |\n")
     
