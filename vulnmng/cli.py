@@ -138,12 +138,13 @@ def main():
             issue_manager = JsonFileIssueManager(file_path=args.json_path)
 
         issues = []
-        scanned_cve_ids = []
         for i, vuln in enumerate(scan_result.vulnerabilities):
             details = enrichment_map.get(i, {})
             issue = issue_manager.create_issue(vuln, details=details)
             issues.append(issue)
-            scanned_cve_ids.append(vuln.cve_id)
+        
+        # Extract CVE IDs from scanned vulnerabilities for comparison
+        scanned_cve_ids = [vuln.cve_id for vuln in scan_result.vulnerabilities]
         
         # Mark vulnerabilities that didn't appear in this scan as fixed
         fixed_count = issue_manager.mark_missing_vulnerabilities_as_fixed(args.target, scanned_cve_ids)

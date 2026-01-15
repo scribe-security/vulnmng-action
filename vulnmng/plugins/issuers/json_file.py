@@ -2,7 +2,7 @@ import json
 import os
 import logging
 from typing import List, Optional, Dict
-from datetime import datetime
+from datetime import datetime, timezone
 from vulnmng.core.interfaces import IssueManagerBase
 from vulnmng.core.models import Issue, Vulnerability, VulnerabilityStatus, ScanMetadata
 
@@ -248,7 +248,7 @@ class JsonFileIssueManager(IssueManagerBase):
             Number of issues marked as fixed
         """
         fixed_count = 0
-        current_time = datetime.now()
+        current_time = datetime.now(timezone.utc)
         date_str = current_time.strftime("%Y-%m-%d")
         
         for issue in self._issues.values():
@@ -278,7 +278,7 @@ class JsonFileIssueManager(IssueManagerBase):
                 if issue.user_comment:
                     issue.user_comment = prefix + issue.user_comment
                 else:
-                    issue.user_comment = prefix.strip()
+                    issue.user_comment = prefix[:-2]  # Remove trailing '. '
             
             # Mark as fixed
             issue.labels = self._ensure_single_status_label(issue.labels, VulnerabilityStatus.FIXED.value)
