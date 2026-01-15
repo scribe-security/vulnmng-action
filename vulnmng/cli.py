@@ -138,10 +138,17 @@ def main():
             issue_manager = JsonFileIssueManager(file_path=args.json_path)
 
         issues = []
+        scanned_cve_ids = []
         for i, vuln in enumerate(scan_result.vulnerabilities):
             details = enrichment_map.get(i, {})
             issue = issue_manager.create_issue(vuln, details=details)
             issues.append(issue)
+            scanned_cve_ids.append(vuln.cve_id)
+        
+        # Mark vulnerabilities that didn't appear in this scan as fixed
+        fixed_count = issue_manager.mark_missing_vulnerabilities_as_fixed(args.target, scanned_cve_ids)
+        if fixed_count > 0:
+            logger.info(f"Marked {fixed_count} missing vulnerabilities as fixed")
         
         # Record Scan Metadata
         issue_manager.record_scan(args.target, "grype", len(issues), target_name=target_name)

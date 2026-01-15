@@ -236,6 +236,58 @@ class JsonFileIssueManager(IssueManagerBase):
             status=status
         )
 
+    def mark_missing_vulnerabilities_as_fixed(self, target: str, scanned_cve_ids: List[str]) -> int:
+        """
+        Mark vulnerabilities as fixed if they don't appear in the current scan.
+        
+        Args:
+            target: The scan target to check
+            scanned_cve_ids: List of CVE IDs found in the current scan
+            
+        Returns:
+            Number of issues marked as fixed
+        """
+        fixed_count = 0
+        current_time = datetime.now()
+        date_str = current_time.strftime("%Y-%m-%d")
+        
+        for issue in self._issues.values():
+            # Only process issues for the same target
+            if issue.vulnerability.target != target:
+                continue
+            
+            # Skip if this vulnerability was found in the current scan
+            if issue.cve_id in scanned_cve_ids:
+                continue
+            
+            # Get current status
+            current_status = self._get_status_from_labels(issue.labels)
+            
+            # Skip if already marked as fixed or other excluded statuses
+            excluded_statuses = {
+                VulnerabilityStatus.FIXED.value,
+                VulnerabilityStatus.IGNORED.value
+            }
+            if current_status in excluded_statuses:
+                continue
+            
+            # Special handling for false-positive status
+            if current_status == VulnerabilityStatus.FALSE_POSITIVE.value:
+                # Prepend the message to existing user_comment
+                prefix = f"CVE did not appear in scan since {date_str}. "
+                if issue.user_comment:
+                    issue.user_comment = prefix + issue.user_comment
+                else:
+                    issue.user_comment = prefix.strip()
+            
+            # Mark as fixed
+            issue.labels = self._ensure_single_status_label(issue.labels, VulnerabilityStatus.FIXED.value)
+            issue.updated_at = current_time
+            fixed_count += 1
+            logger.info(f"Marked {issue.cve_id} as fixed (not found in current scan)")
+        
+        return fixed_count
+
     def update_issue_status(self, issue_id: str, new_status: str, comment: Optional[str] = None) -> Issue:
         """Update issue status via labels. new_status should be in format 'status:*'."""
         if issue_id not in self._issues:
