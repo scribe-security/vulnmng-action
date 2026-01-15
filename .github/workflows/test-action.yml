@@ -233,7 +233,7 @@ jobs:
           git-branch: 'test-issues'
           git-token: ${{ secrets.GITHUB_TOKEN }}
           # We don't fail here yet to ensure reports are generated
-          fail-on: 'Critical'
+          fail-on: 'None'
 
       - name: Reset to Original Branch
         run: git checkout ${{ github.sha }}
