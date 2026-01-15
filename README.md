@@ -122,9 +122,35 @@ The system strictly enforces a "one status per issue" rule via labels prefixed w
 - `status:new`: Default for newly discovered vulnerabilities.
 - `status:false-positive`: Manually identified as not a bug.
 - `status:not-exploitable`: Vulnerability exists but cannot be reached.
-- `status:fixed`: Finding has been patched.
+- `status:fixed`: Finding has been patched or no longer appears in scans.
 - `status:ignored`: No action required.
 - `status:triaged`: Acknowledged but awaiting further action.
+
+### Automatic Status Updates
+
+**Auto-fixing Resolved Vulnerabilities:**
+When you scan a target, VulnMng automatically marks vulnerabilities as `status:fixed` if they:
+- Previously appeared in a scan
+- Are no longer detected in the current scan
+- Are not already marked as `fixed` or `ignored`
+
+**Special Handling for False Positives:**
+If a `status:false-positive` vulnerability disappears from scans, it will be marked as `fixed` and the system will prepend "CVE did not appear in scan since YYYY-MM-DD" to the existing `user_comment` to maintain the audit trail.
+
+**Example:**
+```bash
+# First scan finds CVE-2024-1234
+docker run --rm -v $(pwd):/workspace vulnmng scan /workspace
+
+# Manually triage as false-positive in issues.json
+# ... edit issues.json to add user_comment ...
+
+# After dependency update, second scan no longer finds CVE-2024-1234
+docker run --rm -v $(pwd):/workspace vulnmng scan /workspace
+
+# Result: CVE-2024-1234 is automatically marked as status:fixed
+# Comment becomes: "CVE did not appear in scan since 2024-01-15. [original comment]"
+```
 
 ---
 
