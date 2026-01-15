@@ -51,7 +51,7 @@ class CisaEnrichment(EnhancerBase):
         elif len(id_num) >= 5:
             folder = f"{id_num[:-3]}xxx"
         else:
-             folder = "xxxx" # Fallback, unlikely for valid CVEs
+            folder = "xxxx" # Fallback, unlikely for valid CVEs
              
         url = f"{self.BASE_URL}/{year}/{folder}/{cve_id}.json"
         
@@ -100,11 +100,11 @@ class CisaEnrichment(EnhancerBase):
         # Update metrics (CVSS/EPSS) if available and missing in vuln
         metrics = cna.get("metrics", [])
         if not vuln.cvss_score:
-             for m in metrics:
-                 cvss_v3_1 = m.get("cvssV3_1", {})
-                 if cvss_v3_1:
-                     vuln.cvss_score = cvss_v3_1.get("baseScore")
-                     break
+            for m in metrics:
+                cvss_v3_1 = m.get("cvssV3_1", {})
+                if cvss_v3_1:
+                    vuln.cvss_score = cvss_v3_1.get("baseScore")
+                    break
                      
         # SSVC / EPSS might be in other containers or 'adp'
         # Currently CISA vulnrichment mainly provides SSVC and other decision points in 'adp'
