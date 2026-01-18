@@ -35,12 +35,17 @@ class GitIntegration:
                 check=True
             )
             if result.stdout:
-                logger.debug(result.stdout)
+                logger.debug(f"Git stdout: {result.stdout}")
+            if result.stderr:
+                logger.debug(f"Git stderr: {result.stderr}")
             return True
         except subprocess.CalledProcessError as e:
             # Use DEBUG level since many "failures" are expected (e.g., checking if config exists)
-            logger.debug(f"Git command failed: {e.stderr}")
+            logger.debug(f"Git command failed with exit code {e.returncode}")
+            logger.debug(f"Git stdout: {e.stdout}")
+            logger.debug(f"Git stderr: {e.stderr}")
             if raise_error:
+                logger.error(f"Git command failed: {e.stderr}")
                 raise
             return False
 
@@ -135,6 +140,7 @@ class GitIntegration:
         Returns:
             bool: True if a commit was made, False if there were no changes
         """
+        logger.debug(f"Attempting to commit with message: {message}")
         # Check if there are staged changes
         try:
             subprocess.run(
@@ -144,19 +150,39 @@ class GitIntegration:
                 capture_output=True
             )
             # If check=True succeeds, there are NO changes (exit code 0)
-            logger.debug("No changes to commit")
+            logger.info("No changes to commit")
             return False
         except subprocess.CalledProcessError:
             # Exit code 1 means there ARE changes, proceed with commit
-            pass
+            # Log what files are staged
+            try:
+                status_result = subprocess.run(
+                    ["git", "diff", "--staged", "--name-only"],
+                    cwd=self.repo_path,
+                    capture_output=True,
+                    text=True
+                )
+                logger.info(f"Staged files for commit: {status_result.stdout.strip()}")
+            except Exception:
+                pass
         
         self._run_git(["commit", "-m", message])
+        logger.info(f"Commit successful: {message}")
         return True
 
-    def push(self):
+    def push(self, force=False):
+        """Push commits to remote repository.
+        
+        Args:
+            force: If True, use --force flag to force push
+        """
+        logger.info(f"Pushing to branch: {self.branch} (force={force})")
         args = ["push"]
+        if force:
+            args.append("--force")
         if self.branch:
              # Set upstream if needed
              args.extend(["-u", "origin", self.branch])
         # _run_git now handles injecting the token headers
         self._run_git(args, raise_error=True)
+        logger.info("Push completed successfully")

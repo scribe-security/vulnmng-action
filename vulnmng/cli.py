@@ -28,6 +28,7 @@ def main():
     scan_parser.add_argument("--log-level", choices=["DEBUG", "INFO", "WARNING", "ERROR", "CRITICAL"], default="WARNING", help="Logging level (default: WARNING)")
     scan_parser.add_argument("--fail-on", choices=["None", "Low", "Medium", "High", "Critical"], default="None", help="Fail if any vulnerability with this severity or higher is found (default: None - never fail).")
     scan_parser.add_argument("--enrichment", default="none", help="Comma-separated list of enrichment sources to apply (e.g., 'cisa' or 'cisa,other'). Use 'none' to disable enrichment (default: none).")
+    scan_parser.add_argument("--git-force-push", action="store_true", help="Force push to remote repository (use with caution).")
 
 
     # Report Command
@@ -42,6 +43,7 @@ def main():
     report_parser.add_argument("--target-name", help="Filter report by target name")
     report_parser.add_argument("--log-level", choices=["DEBUG", "INFO", "WARNING", "ERROR", "CRITICAL"], default="WARNING", help="Logging level (default: WARNING)")
     report_parser.add_argument("--enrichment", default="none", help="Comma-separated list of enrichment sources to apply (e.g., 'cisa' or 'cisa,other'). Use 'none' to disable enrichment (default: none).")
+    report_parser.add_argument("--git-force-push", action="store_true", help="Force push to remote repository (use with caution).")
 
     args = parser.parse_args()
 
@@ -204,7 +206,7 @@ def main():
             git_integration.add(abs_json_path)
             
             if git_integration.commit(f"Update vulnerabilities scan results [skip ci]"):
-                git_integration.push()
+                git_integration.push(force=args.git_force_push)
                 logger.info("Git push completed.")
             else:
                 logger.info("No changes to push.")
@@ -350,7 +352,7 @@ def main():
                 git_integration.add(f)
             
             if git_integration.commit(f"Update vulnerability reports [skip ci]"):
-                git_integration.push()
+                git_integration.push(force=args.git_force_push)
                 logger.info("Git push completed.")
             else:
                 logger.info("No changes to push.")

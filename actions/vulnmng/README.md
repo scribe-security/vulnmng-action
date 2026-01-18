@@ -49,6 +49,8 @@ steps:
 | `git-token` | GitHub Token for authenticated operations. | `${{ github.token }}` |
 | `fail-on` | Severity threshold to fail the build (`Low`, `Medium`, `High`, `Critical`). | `None` |
 | `enrichment` | Comma-separated list of enrichment sources (e.g., `cisa`). Use `none` to disable. | `none` |
+| `log-level` | Logging verbosity (`DEBUG`, `INFO`, `WARNING`, `ERROR`, `CRITICAL`). Use `DEBUG` for troubleshooting. | `WARNING` |
+| `git-force-push` | Force push to remote (use with caution). Set to `true` to enable. | `false` |
 | `extra-args` | Additional raw arguments for the `vulnmng` CLI. | |
 
 ### Outputs

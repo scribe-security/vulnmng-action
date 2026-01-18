@@ -49,6 +49,13 @@ add_flag "--git-root" "git-root"
 add_flag "--git-branch" "git-branch"
 add_flag "--git-token" "git-token"
 add_flag "--target-name" "target-name"
+add_flag "--log-level" "log-level"
+
+# Boolean flag for force push
+GIT_FORCE_PUSH=$(get_input "git-force-push")
+if [ "$GIT_FORCE_PUSH" = "true" ]; then
+  CLI_ARGS="${CLI_ARGS} --git-force-push"
+fi
 
 # Fallback for GITHUB_TOKEN environment variable
 GIT_TOKEN=$(get_input "git-token")
