@@ -105,34 +105,49 @@ class GitIntegration:
     def pull(self):
         """Pull latest changes from remote branch.
         
-        Attempts to fetch and pull, but doesn't fail if branch is new or has no upstream.
+        Uses rebase strategy to handle divergent branches automatically.
+        If pull fails, resets to remote to ensure clean state.
         """
-        logger.debug(f"Attempting to pull branch: {self.branch}")
+        logger.debug(f"Attempting to sync with remote branch: {self.branch}")
+        
+        # Configure pull strategy to use rebase (good for automated workflows)
+        self._run_git(["config", "pull.rebase", "true"], raise_error=False)
         
         # First try to fetch to get latest refs
         try:
             self._run_git(["fetch", "origin", self.branch], raise_error=False)
+            logger.debug(f"Fetched latest refs for {self.branch}")
         except Exception as e:
             logger.debug(f"Fetch failed (may be new branch): {e}")
+            # Branch doesn't exist remotely yet - nothing to pull
+            logger.info(f"Branch {self.branch} has no remote yet (will be created on push)")
+            return
         
-        # Then try to pull
+        # Try to pull with rebase
         try:
-            self._run_git(["pull", "origin", self.branch], raise_error=True)
-            logger.info(f"Successfully pulled latest changes from {self.branch}")
+            self._run_git(["pull", "--rebase", "origin", self.branch], raise_error=True)
+            logger.info(f"Successfully synced with remote {self.branch}")
+            return
         except subprocess.CalledProcessError as e:
             stderr = e.stderr.lower() if e.stderr else ""
-            # These are expected/acceptable scenarios - don't fail
+            
+            # Branch doesn't exist remotely
             if any(phrase in stderr for phrase in [
-                "no tracking information",
-                "there is no tracking information",
                 "couldn't find remote ref",
                 "does not exist"
             ]):
                 logger.info(f"Branch {self.branch} has no remote yet (will be created on push)")
-            else:
-                # Unexpected error - log but continue (don't fail the whole operation)
-                logger.warning(f"Git pull failed: {e.stderr}")
-                logger.info("Continuing without pull...")
+                return
+            
+            # Divergent branches or rebase conflicts - reset to remote
+            logger.warning(f"Pull failed, resetting to remote state: {e.stderr}")
+            try:
+                # Reset to remote branch (discard local changes in favor of remote)
+                self._run_git(["reset", "--hard", f"origin/{self.branch}"], raise_error=True)
+                logger.info(f"Reset local branch to match origin/{self.branch}")
+            except subprocess.CalledProcessError:
+                # Even reset failed - just continue, force push will handle it
+                logger.warning("Could not reset to remote, will use force push")
 
     def add(self, file_path: str):
         self._run_git(["add", file_path])
@@ -176,8 +191,10 @@ class GitIntegration:
     def push(self, force=False):
         """Push commits to remote repository.
         
+        Automatically retries with force push if normal push is rejected.
+        
         Args:
-            force: If True, use --force flag to force push
+            force: If True, use --force flag immediately
         """
         logger.info(f"Pushing to branch: {self.branch} (force={force})")
         args = ["push"]
@@ -186,6 +203,24 @@ class GitIntegration:
         if self.branch:
              # Set upstream if needed
              args.extend(["-u", "origin", self.branch])
-        # _run_git now handles injecting the token headers
-        self._run_git(args, raise_error=True)
-        logger.info("Push completed successfully")
+        
+        try:
+            # _run_git now handles injecting the token headers
+            self._run_git(args, raise_error=True)
+            logger.info("Push completed successfully")
+        except subprocess.CalledProcessError as e:
+            if not force and e.returncode == 1:
+                stderr = e.stderr.lower() if e.stderr else ""
+                # Check if it's a non-fast-forward error
+                if "non-fast-forward" in stderr or "rejected" in stderr:
+                    logger.warning("Push rejected (non-fast-forward), retrying with --force")
+                    # Retry with force
+                    args_force = ["push", "--force", "-u", "origin", self.branch]
+                    self._run_git(args_force, raise_error=True)
+                    logger.info("Force push completed successfully")
+                else:
+                    # Different error, re-raise
+                    raise
+            else:
+                # Already tried force or different error code
+                raise
