@@ -58,12 +58,14 @@ fi
 
 if [ "$COMMAND" = "scan" ]; then
   # Scan specific flags
+  add_flag "--fail-on" "fail-on"
+  add_flag "--enrichment" "enrichment"
+  
+  # Target positional argument must come LAST
   TARGET=$(get_input "target")
   if [ -n "$TARGET" ]; then
     CLI_ARGS="${CLI_ARGS} ${TARGET}"
   fi
-  add_flag "--fail-on" "fail-on"
-  add_flag "--enrichment" "enrichment"
   
 elif [ "$COMMAND" = "report" ]; then
   # Report specific flags
