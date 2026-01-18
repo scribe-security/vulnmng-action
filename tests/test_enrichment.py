@@ -31,11 +31,11 @@ class TestCisaEnrichment(unittest.TestCase):
         
         result = enhancer.enhance(vuln)
         
-        # enhance() now returns the enrichment data dict
+        # enhance() now returns structured enrichment data
         self.assertIsInstance(result, dict)
-        # But it also modifies the vulnerability in place
-        self.assertEqual(vuln.description, "Enriched description")
-        self.assertEqual(vuln.cvss_score, 9.8)
+        # Verify that raw CISA data is stored
+        self.assertIn("raw_data", result)
+        self.assertIn("containers", result)
         
         # Verify URL construction logic
         # CVE-2024-12345 -> year 2024, id 12345 -> folder 12xxx
@@ -91,17 +91,14 @@ class TestCisaEnrichment(unittest.TestCase):
             }
         }
         
-        summary = enhancer.format_summary(enrichment_data)
+        summary = enhancer.format_summary(enrichment_data, cve_id="CVE-2024-12345")
         
-        # Check that key elements are present in compact format
-        self.assertIn("KEV:", summary)
+        # Check that key elements are present in new format
+        self.assertIn("KEV Listed", summary)
         self.assertIn("Test Vulnerability", summary)
         self.assertIn("Ransomware", summary)
-        self.assertIn("CVSS v3.1", summary)
-        self.assertIn("9.8", summary)
-        self.assertIn("CRITICAL", summary)
-        self.assertIn("CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:H/I:H/A:H", summary)
-        self.assertIn("Exploits:", summary)
+        self.assertIn("Exploit(s) Available", summary)
+        self.assertIn("View CISA Data", summary)
     
     def test_format_summary_no_data(self):
         enhancer = CisaEnrichment()
