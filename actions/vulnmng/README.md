@@ -47,7 +47,8 @@ steps:
 | `git-root` | Path to the Git root if using Git integration. | |
 | `git-branch` | Target branch for Git commits. | |
 | `git-token` | GitHub Token for authenticated operations. | `${{ github.token }}` |
-| `fail-on` | Severity threshold to fail the build (`Low`, `Medium`, `High`, `Critical`). | |
+| `fail-on` | Severity threshold to fail the build (`Low`, `Medium`, `High`, `Critical`). | `None` |
+| `enrichment` | Comma-separated list of enrichment sources (e.g., `cisa`). Use `none` to disable. | `none` |
 | `extra-args` | Additional raw arguments for the `vulnmng` CLI. | |
 
 ### Outputs
@@ -61,6 +62,32 @@ steps:
 ---
 
 ## Advanced Usage
+
+### Enrichment
+
+Enrich vulnerability reports with additional intelligence data from external sources. Currently supported enrichments:
+
+- **CISA**: Fetches data from [CISA Vulnrichment](https://github.com/cisagov/vulnrichment) including:
+  - Known Exploited Vulnerabilities (KEV) catalog data
+  - CVSS vectors and scores
+  - Exploit references
+  - SSVC decision points
+
+**Example: Scan with CISA enrichment**
+
+```yaml
+- name: Scan with Enrichment
+  uses: scribe-security/vulnmng-action@latest
+  with:
+    target: '.'
+    enrichment: 'cisa'
+    format-md: 'security-report.md'
+```
+
+The enriched data appears in:
+- **Markdown reports**: `Additional Info` column with formatted summaries
+- **CSV reports**: `additional_info` column with full data
+- **JSON database**: `additional_info` field for each issue
 
 ### Recording Findings to a Dedicated Branch
 

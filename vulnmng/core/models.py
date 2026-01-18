@@ -27,11 +27,13 @@ class Vulnerability(BaseModel):
     fix_version: Optional[str] = None
     description: Optional[str] = None
     cvss_score: Optional[float] = None
+    cvss_vector: Optional[str] = None # CVSS vector string (e.g., CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:H/I:H/A:H)
     epss_score: Optional[float] = None
     location_id: Optional[str] = None # Identifying where it was found (e.g. path in image)
     target: str # The scan target (e.g. image name or repo path)
     target_name: Optional[str] = None # Human readable identifier
     aliases: List[str] = Field(default_factory=list) # Related vulnerability IDs (e.g., GHSA, CGA when CVE is primary, or vice versa)
+    ecosystem: Optional[str] = None # Package ecosystem (e.g., npm, pypi, go, maven)
     
 class ScanResult(BaseModel):
     timestamp: datetime = Field(default_factory=datetime.now)
@@ -57,5 +59,6 @@ class Issue(BaseModel):
     created_at: datetime = Field(default_factory=datetime.now)
     updated_at: datetime = Field(default_factory=datetime.now)
     details: Dict[str, Any] = {}  # Enrichment data
+    additional_info: Optional[str] = None  # Formatted markdown summary from enrichments
     vulnerability: Vulnerability
     aliases: List[str] = Field(default_factory=list) # Related vulnerability IDs (mirrors vulnerability.aliases for convenience)

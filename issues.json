@@ -2,6 +2,7 @@
   "scans": [
     {
       "target": "/scan_target",
+      "target_name": null,
       "last_scan": "2025-12-23T06:00:20.504189",
       "tool": "grype",
       "vulnerability_count": 0,
@@ -9,6 +10,7 @@
     },
     {
       "target": "registry:postgres:alpine",
+      "target_name": null,
       "last_scan": "2025-12-23T06:01:45.662501",
       "tool": "grype",
       "vulnerability_count": 12,
@@ -179,8 +181,162 @@
             "assignerShortName": "Go"
           },
           "dataVersion": "5.2"
+        },
+        "cisa": {
+          "dataType": "CVE_RECORD",
+          "containers": {
+            "adp": [
+              {
+                "title": "CVE Program Container",
+                "references": [
+                  {
+                    "url": "http://www.openwall.com/lists/oss-security/2025/10/08/1"
+                  }
+                ],
+                "providerMetadata": {
+                  "orgId": "af854a3a-2127-422b-91ae-364da2661108",
+                  "shortName": "CVE",
+                  "dateUpdated": "2025-11-04T21:14:02.531Z"
+                }
+              },
+              {
+                "title": "CISA ADP Vulnrichment",
+                "metrics": [
+                  {
+                    "cvssV3_1": {
+                      "scope": "UNCHANGED",
+                      "version": "3.1",
+                      "baseScore": 7.5,
+                      "attackVector": "NETWORK",
+                      "baseSeverity": "HIGH",
+                      "vectorString": "CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:N/I:N/A:H",
+                      "integrityImpact": "NONE",
+                      "userInteraction": "NONE",
+                      "attackComplexity": "LOW",
+                      "availabilityImpact": "HIGH",
+                      "privilegesRequired": "NONE",
+                      "confidentialityImpact": "NONE"
+                    }
+                  },
+                  {
+                    "other": {
+                      "type": "ssvc",
+                      "content": {
+                        "id": "CVE-2025-61723",
+                        "role": "CISA Coordinator",
+                        "options": [
+                          {
+                            "Exploitation": "none"
+                          },
+                          {
+                            "Automatable": "no"
+                          },
+                          {
+                            "Technical Impact": "partial"
+                          }
+                        ],
+                        "version": "2.0.3",
+                        "timestamp": "2025-10-30T20:35:15.752525Z"
+                      }
+                    }
+                  }
+                ],
+                "providerMetadata": {
+                  "orgId": "134c704f-9b21-4f2e-91b3-4a467353bcc0",
+                  "shortName": "CISA-ADP",
+                  "dateUpdated": "2025-10-30T20:35:32.603Z"
+                }
+              }
+            ],
+            "cna": {
+              "title": "Quadratic complexity when parsing some invalid inputs in encoding/pem",
+              "credits": [
+                {
+                  "lang": "en",
+                  "value": "Jakub Ciolek"
+                }
+              ],
+              "affected": [
+                {
+                  "vendor": "Go standard library",
+                  "product": "encoding/pem",
+                  "versions": [
+                    {
+                      "status": "affected",
+                      "version": "0",
+                      "lessThan": "1.24.8",
+                      "versionType": "semver"
+                    },
+                    {
+                      "status": "affected",
+                      "version": "1.25.0",
+                      "lessThan": "1.25.2",
+                      "versionType": "semver"
+                    }
+                  ],
+                  "packageName": "encoding/pem",
+                  "collectionURL": "https://pkg.go.dev",
+                  "defaultStatus": "unaffected",
+                  "programRoutines": [
+                    {
+                      "name": "getLine"
+                    },
+                    {
+                      "name": "Decode"
+                    }
+                  ]
+                }
+              ],
+              "references": [
+                {
+                  "url": "https://go.dev/issue/75676"
+                },
+                {
+                  "url": "https://go.dev/cl/709858"
+                },
+                {
+                  "url": "https://groups.google.com/g/golang-announce/c/4Emdl2iQ_bI"
+                },
+                {
+                  "url": "https://pkg.go.dev/vuln/GO-2025-4009"
+                }
+              ],
+              "descriptions": [
+                {
+                  "lang": "en",
+                  "value": "The processing time for parsing some invalid inputs scales non-linearly with respect to the size of the input. This affects programs which parse untrusted PEM inputs."
+                }
+              ],
+              "problemTypes": [
+                {
+                  "descriptions": [
+                    {
+                      "lang": "en",
+                      "description": "CWE-407: Inefficient Algorithmic Complexity"
+                    }
+                  ]
+                }
+              ],
+              "providerMetadata": {
+                "orgId": "1bb62c36-49e3-4200-9d77-64a1400537cc",
+                "shortName": "Go",
+                "dateUpdated": "2025-10-29T22:10:13.220Z"
+              }
+            }
+          },
+          "cveMetadata": {
+            "cveId": "CVE-2025-61723",
+            "state": "PUBLISHED",
+            "dateUpdated": "2025-11-04T21:14:02.531Z",
+            "dateReserved": "2025-09-30T15:05:03.604Z",
+            "assignerOrgId": "1bb62c36-49e3-4200-9d77-64a1400537cc",
+            "datePublished": "2025-10-29T22:10:13.220Z",
+            "assignerShortName": "Go"
+          },
+          "dataVersion": "5.2"
         }
       },
+      "additional_info": "### [CISA Vulnrichment Data](https://github.com/cisagov/vulnrichment)\n\n**SSVC Decision Points:**\n- id: CVE-2025-61723\n- role: CISA Coordinator\n- options: [{'Exploitation': 'none'}, {'Automatable': 'no'}, {'Technical Impact': 'partial'}]\n- version: 2.0.3\n- timestamp: 2025-10-30T20:35:15.752525Z",
       "vulnerability": {
         "cve_id": "CVE-2025-61723",
         "package_name": "stdlib",
@@ -191,8 +347,11 @@
         "cvss_score": 7.5,
         "epss_score": null,
         "location_id": "/usr/local/bin/gosu",
-        "target": "registry:postgres:alpine"
-      }
+        "target": "registry:postgres:alpine",
+        "target_name": null,
+        "aliases": []
+      },
+      "aliases": []
     },
     {
       "id": "CVE-2025-61725::registry:postgres:alpine",
@@ -369,8 +528,174 @@
             "assignerShortName": "Go"
           },
           "dataVersion": "5.2"
+        },
+        "cisa": {
+          "dataType": "CVE_RECORD",
+          "containers": {
+            "adp": [
+              {
+                "title": "CVE Program Container",
+                "references": [
+                  {
+                    "url": "http://www.openwall.com/lists/oss-security/2025/10/08/1"
+                  }
+                ],
+                "providerMetadata": {
+                  "orgId": "af854a3a-2127-422b-91ae-364da2661108",
+                  "shortName": "CVE",
+                  "dateUpdated": "2025-11-04T21:14:05.236Z"
+                }
+              },
+              {
+                "title": "CISA ADP Vulnrichment",
+                "metrics": [
+                  {
+                    "cvssV3_1": {
+                      "scope": "UNCHANGED",
+                      "version": "3.1",
+                      "baseScore": 7.5,
+                      "attackVector": "NETWORK",
+                      "baseSeverity": "HIGH",
+                      "vectorString": "CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:N/I:N/A:H",
+                      "integrityImpact": "NONE",
+                      "userInteraction": "NONE",
+                      "attackComplexity": "LOW",
+                      "availabilityImpact": "HIGH",
+                      "privilegesRequired": "NONE",
+                      "confidentialityImpact": "NONE"
+                    }
+                  },
+                  {
+                    "other": {
+                      "type": "ssvc",
+                      "content": {
+                        "id": "CVE-2025-61725",
+                        "role": "CISA Coordinator",
+                        "options": [
+                          {
+                            "Exploitation": "none"
+                          },
+                          {
+                            "Automatable": "yes"
+                          },
+                          {
+                            "Technical Impact": "partial"
+                          }
+                        ],
+                        "version": "2.0.3",
+                        "timestamp": "2025-11-03T19:44:00.658774Z"
+                      }
+                    }
+                  }
+                ],
+                "providerMetadata": {
+                  "orgId": "134c704f-9b21-4f2e-91b3-4a467353bcc0",
+                  "shortName": "CISA-ADP",
+                  "dateUpdated": "2025-10-30T20:33:05.760Z"
+                }
+              }
+            ],
+            "cna": {
+              "title": "Excessive CPU consumption in ParseAddress in net/mail",
+              "credits": [
+                {
+                  "lang": "en",
+                  "value": "Philippe Antoine (Catena cyber)"
+                }
+              ],
+              "affected": [
+                {
+                  "vendor": "Go standard library",
+                  "product": "net/mail",
+                  "versions": [
+                    {
+                      "status": "affected",
+                      "version": "0",
+                      "lessThan": "1.24.8",
+                      "versionType": "semver"
+                    },
+                    {
+                      "status": "affected",
+                      "version": "1.25.0",
+                      "lessThan": "1.25.2",
+                      "versionType": "semver"
+                    }
+                  ],
+                  "packageName": "net/mail",
+                  "collectionURL": "https://pkg.go.dev",
+                  "defaultStatus": "unaffected",
+                  "programRoutines": [
+                    {
+                      "name": "addrParser.consumeDomainLiteral"
+                    },
+                    {
+                      "name": "AddressParser.Parse"
+                    },
+                    {
+                      "name": "AddressParser.ParseList"
+                    },
+                    {
+                      "name": "Header.AddressList"
+                    },
+                    {
+                      "name": "ParseAddress"
+                    },
+                    {
+                      "name": "ParseAddressList"
+                    }
+                  ]
+                }
+              ],
+              "references": [
+                {
+                  "url": "https://go.dev/cl/709860"
+                },
+                {
+                  "url": "https://go.dev/issue/75680"
+                },
+                {
+                  "url": "https://groups.google.com/g/golang-announce/c/4Emdl2iQ_bI"
+                },
+                {
+                  "url": "https://pkg.go.dev/vuln/GO-2025-4006"
+                }
+              ],
+              "descriptions": [
+                {
+                  "lang": "en",
+                  "value": "The ParseAddress function constructs domain-literal address components through repeated string concatenation. When parsing large domain-literal components, this can cause excessive CPU consumption."
+                }
+              ],
+              "problemTypes": [
+                {
+                  "descriptions": [
+                    {
+                      "lang": "en",
+                      "description": "CWE-407: Inefficient Algorithmic Complexity"
+                    }
+                  ]
+                }
+              ],
+              "providerMetadata": {
+                "orgId": "1bb62c36-49e3-4200-9d77-64a1400537cc",
+                "shortName": "Go",
+                "dateUpdated": "2025-12-09T17:42:06.541Z"
+              }
+            }
+          },
+          "cveMetadata": {
+            "cveId": "CVE-2025-61725",
+            "state": "PUBLISHED",
+            "dateUpdated": "2025-12-09T17:42:06.541Z",
+            "dateReserved": "2025-09-30T15:05:03.605Z",
+            "assignerOrgId": "1bb62c36-49e3-4200-9d77-64a1400537cc",
+            "datePublished": "2025-10-29T22:10:12.255Z",
+            "assignerShortName": "Go"
+          },
+          "dataVersion": "5.2"
         }
       },
+      "additional_info": "### [CISA Vulnrichment Data](https://github.com/cisagov/vulnrichment)\n\n**SSVC Decision Points:**\n- id: CVE-2025-61725\n- role: CISA Coordinator\n- options: [{'Exploitation': 'none'}, {'Automatable': 'yes'}, {'Technical Impact': 'partial'}]\n- version: 2.0.3\n- timestamp: 2025-11-03T19:44:00.658774Z",
       "vulnerability": {
         "cve_id": "CVE-2025-61725",
         "package_name": "stdlib",
@@ -381,8 +706,11 @@
         "cvss_score": 7.5,
         "epss_score": null,
         "location_id": "/usr/local/bin/gosu",
-        "target": "registry:postgres:alpine"
-      }
+        "target": "registry:postgres:alpine",
+        "target_name": null,
+        "aliases": []
+      },
+      "aliases": []
     },
     {
       "id": "CVE-2025-58185::registry:postgres:alpine",
@@ -550,8 +878,165 @@
             "assignerShortName": "Go"
           },
           "dataVersion": "5.2"
+        },
+        "cisa": {
+          "dataType": "CVE_RECORD",
+          "containers": {
+            "adp": [
+              {
+                "title": "CVE Program Container",
+                "references": [
+                  {
+                    "url": "http://www.openwall.com/lists/oss-security/2025/10/08/1"
+                  }
+                ],
+                "providerMetadata": {
+                  "orgId": "af854a3a-2127-422b-91ae-364da2661108",
+                  "shortName": "CVE",
+                  "dateUpdated": "2025-11-04T21:13:34.163Z"
+                }
+              },
+              {
+                "title": "CISA ADP Vulnrichment",
+                "metrics": [
+                  {
+                    "cvssV3_1": {
+                      "scope": "UNCHANGED",
+                      "version": "3.1",
+                      "baseScore": 5.3,
+                      "attackVector": "NETWORK",
+                      "baseSeverity": "MEDIUM",
+                      "vectorString": "CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:N/I:N/A:L",
+                      "integrityImpact": "NONE",
+                      "userInteraction": "NONE",
+                      "attackComplexity": "LOW",
+                      "availabilityImpact": "LOW",
+                      "privilegesRequired": "NONE",
+                      "confidentialityImpact": "NONE"
+                    }
+                  },
+                  {
+                    "other": {
+                      "type": "ssvc",
+                      "content": {
+                        "id": "CVE-2025-58185",
+                        "role": "CISA Coordinator",
+                        "options": [
+                          {
+                            "Exploitation": "none"
+                          },
+                          {
+                            "Automatable": "yes"
+                          },
+                          {
+                            "Technical Impact": "partial"
+                          }
+                        ],
+                        "version": "2.0.3",
+                        "timestamp": "2025-10-30T14:25:15.876220Z"
+                      }
+                    }
+                  }
+                ],
+                "providerMetadata": {
+                  "orgId": "134c704f-9b21-4f2e-91b3-4a467353bcc0",
+                  "shortName": "CISA-ADP",
+                  "dateUpdated": "2025-10-30T14:25:35.301Z"
+                }
+              }
+            ],
+            "cna": {
+              "title": "Parsing DER payload can cause memory exhaustion in encoding/asn1",
+              "credits": [
+                {
+                  "lang": "en",
+                  "value": "Jakub Ciolek"
+                }
+              ],
+              "affected": [
+                {
+                  "vendor": "Go standard library",
+                  "product": "encoding/asn1",
+                  "versions": [
+                    {
+                      "status": "affected",
+                      "version": "0",
+                      "lessThan": "1.24.8",
+                      "versionType": "semver"
+                    },
+                    {
+                      "status": "affected",
+                      "version": "1.25.0",
+                      "lessThan": "1.25.2",
+                      "versionType": "semver"
+                    }
+                  ],
+                  "packageName": "encoding/asn1",
+                  "collectionURL": "https://pkg.go.dev",
+                  "defaultStatus": "unaffected",
+                  "programRoutines": [
+                    {
+                      "name": "parseSequenceOf"
+                    },
+                    {
+                      "name": "Unmarshal"
+                    },
+                    {
+                      "name": "UnmarshalWithParams"
+                    }
+                  ]
+                }
+              ],
+              "references": [
+                {
+                  "url": "https://go.dev/issue/75671"
+                },
+                {
+                  "url": "https://go.dev/cl/709856"
+                },
+                {
+                  "url": "https://groups.google.com/g/golang-announce/c/4Emdl2iQ_bI"
+                },
+                {
+                  "url": "https://pkg.go.dev/vuln/GO-2025-4011"
+                }
+              ],
+              "descriptions": [
+                {
+                  "lang": "en",
+                  "value": "Parsing a maliciously crafted DER payload could allocate large amounts of memory, causing memory exhaustion."
+                }
+              ],
+              "problemTypes": [
+                {
+                  "descriptions": [
+                    {
+                      "lang": "en",
+                      "description": "CWE-400: Uncontrolled Resource Consumption"
+                    }
+                  ]
+                }
+              ],
+              "providerMetadata": {
+                "orgId": "1bb62c36-49e3-4200-9d77-64a1400537cc",
+                "shortName": "Go",
+                "dateUpdated": "2025-10-29T22:10:13.682Z"
+              }
+            }
+          },
+          "cveMetadata": {
+            "cveId": "CVE-2025-58185",
+            "state": "PUBLISHED",
+            "dateUpdated": "2025-11-04T21:13:34.163Z",
+            "dateReserved": "2025-08-27T14:50:58.691Z",
+            "assignerOrgId": "1bb62c36-49e3-4200-9d77-64a1400537cc",
+            "datePublished": "2025-10-29T22:10:13.682Z",
+            "assignerShortName": "Go"
+          },
+          "dataVersion": "5.2"
         }
       },
+      "additional_info": "### [CISA Vulnrichment Data](https://github.com/cisagov/vulnrichment)\n\n**SSVC Decision Points:**\n- id: CVE-2025-58185\n- role: CISA Coordinator\n- options: [{'Exploitation': 'none'}, {'Automatable': 'yes'}, {'Technical Impact': 'partial'}]\n- version: 2.0.3\n- timestamp: 2025-10-30T14:25:15.876220Z",
       "vulnerability": {
         "cve_id": "CVE-2025-58185",
         "package_name": "stdlib",
@@ -562,8 +1047,11 @@
         "cvss_score": 5.3,
         "epss_score": null,
         "location_id": "/usr/local/bin/gosu",
-        "target": "registry:postgres:alpine"
-      }
+        "target": "registry:postgres:alpine",
+        "target_name": null,
+        "aliases": []
+      },
+      "aliases": []
     },
     {
       "id": "CVE-2025-58186::registry:postgres:alpine",
@@ -770,8 +1258,204 @@
             "assignerShortName": "Go"
           },
           "dataVersion": "5.2"
+        },
+        "cisa": {
+          "dataType": "CVE_RECORD",
+          "containers": {
+            "adp": [
+              {
+                "title": "CVE Program Container",
+                "references": [
+                  {
+                    "url": "http://www.openwall.com/lists/oss-security/2025/10/08/1"
+                  }
+                ],
+                "providerMetadata": {
+                  "orgId": "af854a3a-2127-422b-91ae-364da2661108",
+                  "shortName": "CVE",
+                  "dateUpdated": "2025-11-04T21:13:35.468Z"
+                }
+              },
+              {
+                "title": "CISA ADP Vulnrichment",
+                "metrics": [
+                  {
+                    "cvssV3_1": {
+                      "scope": "UNCHANGED",
+                      "version": "3.1",
+                      "baseScore": 5.3,
+                      "attackVector": "NETWORK",
+                      "baseSeverity": "MEDIUM",
+                      "vectorString": "CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:N/I:N/A:L",
+                      "integrityImpact": "NONE",
+                      "userInteraction": "NONE",
+                      "attackComplexity": "LOW",
+                      "availabilityImpact": "LOW",
+                      "privilegesRequired": "NONE",
+                      "confidentialityImpact": "NONE"
+                    }
+                  },
+                  {
+                    "other": {
+                      "type": "ssvc",
+                      "content": {
+                        "id": "CVE-2025-58186",
+                        "role": "CISA Coordinator",
+                        "options": [
+                          {
+                            "Exploitation": "none"
+                          },
+                          {
+                            "Automatable": "yes"
+                          },
+                          {
+                            "Technical Impact": "partial"
+                          }
+                        ],
+                        "version": "2.0.3",
+                        "timestamp": "2025-10-30T14:24:44.763207Z"
+                      }
+                    }
+                  }
+                ],
+                "providerMetadata": {
+                  "orgId": "134c704f-9b21-4f2e-91b3-4a467353bcc0",
+                  "shortName": "CISA-ADP",
+                  "dateUpdated": "2025-10-30T14:24:38.946Z"
+                }
+              }
+            ],
+            "cna": {
+              "title": "Lack of limit when parsing cookies can cause memory exhaustion in net/http",
+              "credits": [
+                {
+                  "lang": "en",
+                  "value": "jub0bs"
+                }
+              ],
+              "affected": [
+                {
+                  "vendor": "Go standard library",
+                  "product": "net/http",
+                  "versions": [
+                    {
+                      "status": "affected",
+                      "version": "0",
+                      "lessThan": "1.24.8",
+                      "versionType": "semver"
+                    },
+                    {
+                      "status": "affected",
+                      "version": "1.25.0",
+                      "lessThan": "1.25.2",
+                      "versionType": "semver"
+                    }
+                  ],
+                  "packageName": "net/http",
+                  "collectionURL": "https://pkg.go.dev",
+                  "defaultStatus": "unaffected",
+                  "programRoutines": [
+                    {
+                      "name": "ParseCookie"
+                    },
+                    {
+                      "name": "readSetCookies"
+                    },
+                    {
+                      "name": "readCookies"
+                    },
+                    {
+                      "name": "Client.Do"
+                    },
+                    {
+                      "name": "Client.Get"
+                    },
+                    {
+                      "name": "Client.Head"
+                    },
+                    {
+                      "name": "Client.Post"
+                    },
+                    {
+                      "name": "Client.PostForm"
+                    },
+                    {
+                      "name": "Get"
+                    },
+                    {
+                      "name": "Head"
+                    },
+                    {
+                      "name": "Post"
+                    },
+                    {
+                      "name": "PostForm"
+                    },
+                    {
+                      "name": "Request.Cookie"
+                    },
+                    {
+                      "name": "Request.Cookies"
+                    },
+                    {
+                      "name": "Request.CookiesNamed"
+                    },
+                    {
+                      "name": "Response.Cookies"
+                    }
+                  ]
+                }
+              ],
+              "references": [
+                {
+                  "url": "https://go.dev/issue/75672"
+                },
+                {
+                  "url": "https://go.dev/cl/709855"
+                },
+                {
+                  "url": "https://groups.google.com/g/golang-announce/c/4Emdl2iQ_bI"
+                },
+                {
+                  "url": "https://pkg.go.dev/vuln/GO-2025-4012"
+                }
+              ],
+              "descriptions": [
+                {
+                  "lang": "en",
+                  "value": "Despite HTTP headers having a default limit of 1MB, the number of cookies that can be parsed does not have a limit. By sending a lot of very small cookies such as \"a=;\", an attacker can make an HTTP server allocate a large amount of structs, causing large memory consumption."
+                }
+              ],
+              "problemTypes": [
+                {
+                  "descriptions": [
+                    {
+                      "lang": "en",
+                      "description": "CWE-400: Uncontrolled Resource Consumption"
+                    }
+                  ]
+                }
+              ],
+              "providerMetadata": {
+                "orgId": "1bb62c36-49e3-4200-9d77-64a1400537cc",
+                "shortName": "Go",
+                "dateUpdated": "2025-10-29T22:10:13.912Z"
+              }
+            }
+          },
+          "cveMetadata": {
+            "cveId": "CVE-2025-58186",
+            "state": "PUBLISHED",
+            "dateUpdated": "2025-11-04T21:13:35.468Z",
+            "dateReserved": "2025-08-27T14:50:58.691Z",
+            "assignerOrgId": "1bb62c36-49e3-4200-9d77-64a1400537cc",
+            "datePublished": "2025-10-29T22:10:13.912Z",
+            "assignerShortName": "Go"
+          },
+          "dataVersion": "5.2"
         }
       },
+      "additional_info": "### [CISA Vulnrichment Data](https://github.com/cisagov/vulnrichment)\n\n**SSVC Decision Points:**\n- id: CVE-2025-58186\n- role: CISA Coordinator\n- options: [{'Exploitation': 'none'}, {'Automatable': 'yes'}, {'Technical Impact': 'partial'}]\n- version: 2.0.3\n- timestamp: 2025-10-30T14:24:44.763207Z",
       "vulnerability": {
         "cve_id": "CVE-2025-58186",
         "package_name": "stdlib",
@@ -782,8 +1466,11 @@
         "cvss_score": 5.3,
         "epss_score": null,
         "location_id": "/usr/local/bin/gosu",
-        "target": "registry:postgres:alpine"
-      }
+        "target": "registry:postgres:alpine",
+        "target_name": null,
+        "aliases": []
+      },
+      "aliases": []
     },
     {
       "id": "CVE-2025-61724::registry:postgres:alpine",
@@ -945,8 +1632,159 @@
             "assignerShortName": "Go"
           },
           "dataVersion": "5.2"
+        },
+        "cisa": {
+          "dataType": "CVE_RECORD",
+          "containers": {
+            "adp": [
+              {
+                "title": "CVE Program Container",
+                "references": [
+                  {
+                    "url": "http://www.openwall.com/lists/oss-security/2025/10/08/1"
+                  }
+                ],
+                "providerMetadata": {
+                  "orgId": "af854a3a-2127-422b-91ae-364da2661108",
+                  "shortName": "CVE",
+                  "dateUpdated": "2025-11-04T21:14:03.930Z"
+                }
+              },
+              {
+                "title": "CISA ADP Vulnrichment",
+                "metrics": [
+                  {
+                    "cvssV3_1": {
+                      "scope": "UNCHANGED",
+                      "version": "3.1",
+                      "baseScore": 5.3,
+                      "attackVector": "NETWORK",
+                      "baseSeverity": "MEDIUM",
+                      "vectorString": "CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:N/I:N/A:L",
+                      "integrityImpact": "NONE",
+                      "userInteraction": "NONE",
+                      "attackComplexity": "LOW",
+                      "availabilityImpact": "LOW",
+                      "privilegesRequired": "NONE",
+                      "confidentialityImpact": "NONE"
+                    }
+                  },
+                  {
+                    "other": {
+                      "type": "ssvc",
+                      "content": {
+                        "id": "CVE-2025-61724",
+                        "role": "CISA Coordinator",
+                        "options": [
+                          {
+                            "Exploitation": "none"
+                          },
+                          {
+                            "Automatable": "yes"
+                          },
+                          {
+                            "Technical Impact": "partial"
+                          }
+                        ],
+                        "version": "2.0.3",
+                        "timestamp": "2025-10-30T14:22:06.282935Z"
+                      }
+                    }
+                  }
+                ],
+                "providerMetadata": {
+                  "orgId": "134c704f-9b21-4f2e-91b3-4a467353bcc0",
+                  "shortName": "CISA-ADP",
+                  "dateUpdated": "2025-10-30T14:21:44.140Z"
+                }
+              }
+            ],
+            "cna": {
+              "title": "Excessive CPU consumption in Reader.ReadResponse in net/textproto",
+              "credits": [
+                {
+                  "lang": "en",
+                  "value": "Jakub Ciolek"
+                }
+              ],
+              "affected": [
+                {
+                  "vendor": "Go standard library",
+                  "product": "net/textproto",
+                  "versions": [
+                    {
+                      "status": "affected",
+                      "version": "0",
+                      "lessThan": "1.24.8",
+                      "versionType": "semver"
+                    },
+                    {
+                      "status": "affected",
+                      "version": "1.25.0",
+                      "lessThan": "1.25.2",
+                      "versionType": "semver"
+                    }
+                  ],
+                  "packageName": "net/textproto",
+                  "collectionURL": "https://pkg.go.dev",
+                  "defaultStatus": "unaffected",
+                  "programRoutines": [
+                    {
+                      "name": "Reader.ReadResponse"
+                    }
+                  ]
+                }
+              ],
+              "references": [
+                {
+                  "url": "https://go.dev/cl/709859"
+                },
+                {
+                  "url": "https://go.dev/issue/75716"
+                },
+                {
+                  "url": "https://groups.google.com/g/golang-announce/c/4Emdl2iQ_bI"
+                },
+                {
+                  "url": "https://pkg.go.dev/vuln/GO-2025-4015"
+                }
+              ],
+              "descriptions": [
+                {
+                  "lang": "en",
+                  "value": "The Reader.ReadResponse function constructs a response string through repeated string concatenation of lines. When the number of lines in a response is large, this can cause excessive CPU consumption."
+                }
+              ],
+              "problemTypes": [
+                {
+                  "descriptions": [
+                    {
+                      "lang": "en",
+                      "description": "CWE-407: Inefficient Algorithmic Complexity"
+                    }
+                  ]
+                }
+              ],
+              "providerMetadata": {
+                "orgId": "1bb62c36-49e3-4200-9d77-64a1400537cc",
+                "shortName": "Go",
+                "dateUpdated": "2025-10-29T22:10:14.609Z"
+              }
+            }
+          },
+          "cveMetadata": {
+            "cveId": "CVE-2025-61724",
+            "state": "PUBLISHED",
+            "dateUpdated": "2025-11-04T21:14:03.930Z",
+            "dateReserved": "2025-09-30T15:05:03.605Z",
+            "assignerOrgId": "1bb62c36-49e3-4200-9d77-64a1400537cc",
+            "datePublished": "2025-10-29T22:10:14.609Z",
+            "assignerShortName": "Go"
+          },
+          "dataVersion": "5.2"
         }
       },
+      "additional_info": "### [CISA Vulnrichment Data](https://github.com/cisagov/vulnrichment)\n\n**SSVC Decision Points:**\n- id: CVE-2025-61724\n- role: CISA Coordinator\n- options: [{'Exploitation': 'none'}, {'Automatable': 'yes'}, {'Technical Impact': 'partial'}]\n- version: 2.0.3\n- timestamp: 2025-10-30T14:22:06.282935Z",
       "vulnerability": {
         "cve_id": "CVE-2025-61724",
         "package_name": "stdlib",
@@ -957,8 +1795,11 @@
         "cvss_score": 5.3,
         "epss_score": null,
         "location_id": "/usr/local/bin/gosu",
-        "target": "registry:postgres:alpine"
-      }
+        "target": "registry:postgres:alpine",
+        "target_name": null,
+        "aliases": []
+      },
+      "aliases": []
     },
     {
       "id": "CVE-2025-47912::registry:postgres:alpine",
@@ -1135,8 +1976,174 @@
             "assignerShortName": "Go"
           },
           "dataVersion": "5.2"
+        },
+        "cisa": {
+          "dataType": "CVE_RECORD",
+          "containers": {
+            "adp": [
+              {
+                "title": "CVE Program Container",
+                "references": [
+                  {
+                    "url": "http://www.openwall.com/lists/oss-security/2025/10/08/1"
+                  }
+                ],
+                "providerMetadata": {
+                  "orgId": "af854a3a-2127-422b-91ae-364da2661108",
+                  "shortName": "CVE",
+                  "dateUpdated": "2025-11-04T21:10:57.384Z"
+                }
+              },
+              {
+                "title": "CISA ADP Vulnrichment",
+                "metrics": [
+                  {
+                    "cvssV3_1": {
+                      "scope": "UNCHANGED",
+                      "version": "3.1",
+                      "baseScore": 5.3,
+                      "attackVector": "NETWORK",
+                      "baseSeverity": "MEDIUM",
+                      "vectorString": "CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:L/I:N/A:N",
+                      "integrityImpact": "NONE",
+                      "userInteraction": "NONE",
+                      "attackComplexity": "LOW",
+                      "availabilityImpact": "NONE",
+                      "privilegesRequired": "NONE",
+                      "confidentialityImpact": "LOW"
+                    }
+                  },
+                  {
+                    "other": {
+                      "type": "ssvc",
+                      "content": {
+                        "id": "CVE-2025-47912",
+                        "role": "CISA Coordinator",
+                        "options": [
+                          {
+                            "Exploitation": "none"
+                          },
+                          {
+                            "Automatable": "no"
+                          },
+                          {
+                            "Technical Impact": "partial"
+                          }
+                        ],
+                        "version": "2.0.3",
+                        "timestamp": "2025-10-30T20:37:56.865966Z"
+                      }
+                    }
+                  }
+                ],
+                "providerMetadata": {
+                  "orgId": "134c704f-9b21-4f2e-91b3-4a467353bcc0",
+                  "shortName": "CISA-ADP",
+                  "dateUpdated": "2025-10-30T20:38:16.889Z"
+                }
+              }
+            ],
+            "cna": {
+              "title": "Insufficient validation of bracketed IPv6 hostnames in net/url",
+              "credits": [
+                {
+                  "lang": "en",
+                  "value": "Enze Wang, Jingcheng Yang and Zehui Miao of Tsinghua University"
+                }
+              ],
+              "affected": [
+                {
+                  "vendor": "Go standard library",
+                  "product": "net/url",
+                  "versions": [
+                    {
+                      "status": "affected",
+                      "version": "0",
+                      "lessThan": "1.24.8",
+                      "versionType": "semver"
+                    },
+                    {
+                      "status": "affected",
+                      "version": "1.25.0",
+                      "lessThan": "1.25.2",
+                      "versionType": "semver"
+                    }
+                  ],
+                  "packageName": "net/url",
+                  "collectionURL": "https://pkg.go.dev",
+                  "defaultStatus": "unaffected",
+                  "programRoutines": [
+                    {
+                      "name": "parseHost"
+                    },
+                    {
+                      "name": "JoinPath"
+                    },
+                    {
+                      "name": "Parse"
+                    },
+                    {
+                      "name": "ParseRequestURI"
+                    },
+                    {
+                      "name": "URL.Parse"
+                    },
+                    {
+                      "name": "URL.UnmarshalBinary"
+                    }
+                  ]
+                }
+              ],
+              "references": [
+                {
+                  "url": "https://go.dev/issue/75678"
+                },
+                {
+                  "url": "https://go.dev/cl/709857"
+                },
+                {
+                  "url": "https://groups.google.com/g/golang-announce/c/4Emdl2iQ_bI"
+                },
+                {
+                  "url": "https://pkg.go.dev/vuln/GO-2025-4010"
+                }
+              ],
+              "descriptions": [
+                {
+                  "lang": "en",
+                  "value": "The Parse function permits values other than IPv6 addresses to be included in square brackets within the host component of a URL. RFC 3986 permits IPv6 addresses to be included within the host component, enclosed within square brackets. For example: \"http://[::1]/\". IPv4 addresses and hostnames must not appear within square brackets. Parse did not enforce this requirement."
+                }
+              ],
+              "problemTypes": [
+                {
+                  "descriptions": [
+                    {
+                      "lang": "en",
+                      "description": "CWE-1286: Improper Validation of Syntactic Correctness of Input"
+                    }
+                  ]
+                }
+              ],
+              "providerMetadata": {
+                "orgId": "1bb62c36-49e3-4200-9d77-64a1400537cc",
+                "shortName": "Go",
+                "dateUpdated": "2025-10-29T22:10:13.435Z"
+              }
+            }
+          },
+          "cveMetadata": {
+            "cveId": "CVE-2025-47912",
+            "state": "PUBLISHED",
+            "dateUpdated": "2025-11-04T21:10:57.384Z",
+            "dateReserved": "2025-05-13T23:31:29.597Z",
+            "assignerOrgId": "1bb62c36-49e3-4200-9d77-64a1400537cc",
+            "datePublished": "2025-10-29T22:10:13.435Z",
+            "assignerShortName": "Go"
+          },
+          "dataVersion": "5.2"
         }
       },
+      "additional_info": "### [CISA Vulnrichment Data](https://github.com/cisagov/vulnrichment)\n\n**SSVC Decision Points:**\n- id: CVE-2025-47912\n- role: CISA Coordinator\n- options: [{'Exploitation': 'none'}, {'Automatable': 'no'}, {'Technical Impact': 'partial'}]\n- version: 2.0.3\n- timestamp: 2025-10-30T20:37:56.865966Z",
       "vulnerability": {
         "cve_id": "CVE-2025-47912",
         "package_name": "stdlib",
@@ -1147,8 +2154,11 @@
         "cvss_score": 5.3,
         "epss_score": null,
         "location_id": "/usr/local/bin/gosu",
-        "target": "registry:postgres:alpine"
-      }
+        "target": "registry:postgres:alpine",
+        "target_name": null,
+        "aliases": []
+      },
+      "aliases": []
     },
     {
       "id": "CVE-2025-58187::registry:postgres:alpine",
@@ -1406,8 +2416,255 @@
             "assignerShortName": "Go"
           },
           "dataVersion": "5.2"
+        },
+        "cisa": {
+          "dataType": "CVE_RECORD",
+          "containers": {
+            "adp": [
+              {
+                "title": "CVE Program Container",
+                "references": [
+                  {
+                    "url": "http://www.openwall.com/lists/oss-security/2025/10/08/1"
+                  }
+                ],
+                "providerMetadata": {
+                  "orgId": "af854a3a-2127-422b-91ae-364da2661108",
+                  "shortName": "CVE",
+                  "dateUpdated": "2025-11-04T21:13:36.780Z"
+                }
+              },
+              {
+                "title": "CISA ADP Vulnrichment",
+                "metrics": [
+                  {
+                    "cvssV3_1": {
+                      "scope": "UNCHANGED",
+                      "version": "3.1",
+                      "baseScore": 7.5,
+                      "attackVector": "NETWORK",
+                      "baseSeverity": "HIGH",
+                      "vectorString": "CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:N/I:N/A:H",
+                      "integrityImpact": "NONE",
+                      "userInteraction": "NONE",
+                      "attackComplexity": "LOW",
+                      "availabilityImpact": "HIGH",
+                      "privilegesRequired": "NONE",
+                      "confidentialityImpact": "NONE"
+                    }
+                  },
+                  {
+                    "other": {
+                      "type": "ssvc",
+                      "content": {
+                        "id": "CVE-2025-58187",
+                        "role": "CISA Coordinator",
+                        "options": [
+                          {
+                            "Exploitation": "none"
+                          },
+                          {
+                            "Automatable": "yes"
+                          },
+                          {
+                            "Technical Impact": "partial"
+                          }
+                        ],
+                        "version": "2.0.3",
+                        "timestamp": "2025-11-03T19:51:43.036632Z"
+                      }
+                    }
+                  }
+                ],
+                "providerMetadata": {
+                  "orgId": "134c704f-9b21-4f2e-91b3-4a467353bcc0",
+                  "shortName": "CISA-ADP",
+                  "dateUpdated": "2025-10-30T20:34:03.955Z"
+                }
+              }
+            ],
+            "cna": {
+              "title": "Quadratic complexity when checking name constraints in crypto/x509",
+              "credits": [
+                {
+                  "lang": "en",
+                  "value": "Jakub Ciolek"
+                }
+              ],
+              "affected": [
+                {
+                  "vendor": "Go standard library",
+                  "product": "crypto/x509",
+                  "versions": [
+                    {
+                      "status": "affected",
+                      "version": "0",
+                      "lessThan": "1.24.9",
+                      "versionType": "semver"
+                    },
+                    {
+                      "status": "affected",
+                      "version": "1.25.0",
+                      "lessThan": "1.25.3",
+                      "versionType": "semver"
+                    }
+                  ],
+                  "packageName": "crypto/x509",
+                  "collectionURL": "https://pkg.go.dev",
+                  "defaultStatus": "unaffected",
+                  "programRoutines": [
+                    {
+                      "name": "parseSANExtension"
+                    },
+                    {
+                      "name": "domainToReverseLabels"
+                    },
+                    {
+                      "name": "CertPool.AppendCertsFromPEM"
+                    },
+                    {
+                      "name": "Certificate.CheckCRLSignature"
+                    },
+                    {
+                      "name": "Certificate.CheckSignature"
+                    },
+                    {
+                      "name": "Certificate.CheckSignatureFrom"
+                    },
+                    {
+                      "name": "Certificate.CreateCRL"
+                    },
+                    {
+                      "name": "Certificate.Verify"
+                    },
+                    {
+                      "name": "CertificateRequest.CheckSignature"
+                    },
+                    {
+                      "name": "CreateCertificate"
+                    },
+                    {
+                      "name": "CreateCertificateRequest"
+                    },
+                    {
+                      "name": "CreateRevocationList"
+                    },
+                    {
+                      "name": "DecryptPEMBlock"
+                    },
+                    {
+                      "name": "EncryptPEMBlock"
+                    },
+                    {
+                      "name": "MarshalECPrivateKey"
+                    },
+                    {
+                      "name": "MarshalPKCS1PrivateKey"
+                    },
+                    {
+                      "name": "MarshalPKCS1PublicKey"
+                    },
+                    {
+                      "name": "MarshalPKCS8PrivateKey"
+                    },
+                    {
+                      "name": "MarshalPKIXPublicKey"
+                    },
+                    {
+                      "name": "ParseCRL"
+                    },
+                    {
+                      "name": "ParseCertificate"
+                    },
+                    {
+                      "name": "ParseCertificateRequest"
+                    },
+                    {
+                      "name": "ParseCertificates"
+                    },
+                    {
+                      "name": "ParseDERCRL"
+                    },
+                    {
+                      "name": "ParseECPrivateKey"
+                    },
+                    {
+                      "name": "ParsePKCS1PrivateKey"
+                    },
+                    {
+                      "name": "ParsePKCS1PublicKey"
+                    },
+                    {
+                      "name": "ParsePKCS8PrivateKey"
+                    },
+                    {
+                      "name": "ParsePKIXPublicKey"
+                    },
+                    {
+                      "name": "ParseRevocationList"
+                    },
+                    {
+                      "name": "RevocationList.CheckSignatureFrom"
+                    },
+                    {
+                      "name": "SetFallbackRoots"
+                    },
+                    {
+                      "name": "SystemCertPool"
+                    }
+                  ]
+                }
+              ],
+              "references": [
+                {
+                  "url": "https://go.dev/issue/75681"
+                },
+                {
+                  "url": "https://go.dev/cl/709854"
+                },
+                {
+                  "url": "https://groups.google.com/g/golang-announce/c/4Emdl2iQ_bI"
+                },
+                {
+                  "url": "https://pkg.go.dev/vuln/GO-2025-4007"
+                }
+              ],
+              "descriptions": [
+                {
+                  "lang": "en",
+                  "value": "Due to the design of the name constraint checking algorithm, the processing time of some inputs scale non-linearly with respect to the size of the certificate. This affects programs which validate arbitrary certificate chains."
+                }
+              ],
+              "problemTypes": [
+                {
+                  "descriptions": [
+                    {
+                      "lang": "en",
+                      "description": "CWE-407: Inefficient Algorithmic Complexity"
+                    }
+                  ]
+                }
+              ],
+              "providerMetadata": {
+                "orgId": "1bb62c36-49e3-4200-9d77-64a1400537cc",
+                "shortName": "Go",
+                "dateUpdated": "2025-11-20T22:23:47.179Z"
+              }
+            }
+          },
+          "cveMetadata": {
+            "cveId": "CVE-2025-58187",
+            "state": "PUBLISHED",
+            "dateUpdated": "2025-11-20T22:23:47.179Z",
+            "dateReserved": "2025-08-27T14:50:58.692Z",
+            "assignerOrgId": "1bb62c36-49e3-4200-9d77-64a1400537cc",
+            "datePublished": "2025-10-29T22:10:12.624Z",
+            "assignerShortName": "Go"
+          },
+          "dataVersion": "5.2"
         }
       },
+      "additional_info": "### [CISA Vulnrichment Data](https://github.com/cisagov/vulnrichment)\n\n**SSVC Decision Points:**\n- id: CVE-2025-58187\n- role: CISA Coordinator\n- options: [{'Exploitation': 'none'}, {'Automatable': 'yes'}, {'Technical Impact': 'partial'}]\n- version: 2.0.3\n- timestamp: 2025-11-03T19:51:43.036632Z",
       "vulnerability": {
         "cve_id": "CVE-2025-58187",
         "package_name": "stdlib",
@@ -1418,8 +2675,11 @@
         "cvss_score": 7.5,
         "epss_score": null,
         "location_id": "/usr/local/bin/gosu",
-        "target": "registry:postgres:alpine"
-      }
+        "target": "registry:postgres:alpine",
+        "target_name": null,
+        "aliases": []
+      },
+      "aliases": []
     },
     {
       "id": "CVE-2025-58188::registry:postgres:alpine",
@@ -1584,8 +2844,162 @@
             "assignerShortName": "Go"
           },
           "dataVersion": "5.2"
+        },
+        "cisa": {
+          "dataType": "CVE_RECORD",
+          "containers": {
+            "adp": [
+              {
+                "title": "CVE Program Container",
+                "references": [
+                  {
+                    "url": "http://www.openwall.com/lists/oss-security/2025/10/08/1"
+                  }
+                ],
+                "providerMetadata": {
+                  "orgId": "af854a3a-2127-422b-91ae-364da2661108",
+                  "shortName": "CVE",
+                  "dateUpdated": "2025-11-04T21:13:38.109Z"
+                }
+              },
+              {
+                "title": "CISA ADP Vulnrichment",
+                "metrics": [
+                  {
+                    "cvssV3_1": {
+                      "scope": "UNCHANGED",
+                      "version": "3.1",
+                      "baseScore": 7.5,
+                      "attackVector": "NETWORK",
+                      "baseSeverity": "HIGH",
+                      "vectorString": "CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:N/I:N/A:H",
+                      "integrityImpact": "NONE",
+                      "userInteraction": "NONE",
+                      "attackComplexity": "LOW",
+                      "availabilityImpact": "HIGH",
+                      "privilegesRequired": "NONE",
+                      "confidentialityImpact": "NONE"
+                    }
+                  },
+                  {
+                    "other": {
+                      "type": "ssvc",
+                      "content": {
+                        "id": "CVE-2025-58188",
+                        "role": "CISA Coordinator",
+                        "options": [
+                          {
+                            "Exploitation": "none"
+                          },
+                          {
+                            "Automatable": "yes"
+                          },
+                          {
+                            "Technical Impact": "partial"
+                          }
+                        ],
+                        "version": "2.0.3",
+                        "timestamp": "2025-10-30T14:23:42.371985Z"
+                      }
+                    }
+                  }
+                ],
+                "providerMetadata": {
+                  "orgId": "134c704f-9b21-4f2e-91b3-4a467353bcc0",
+                  "shortName": "CISA-ADP",
+                  "dateUpdated": "2025-10-30T14:23:57.608Z"
+                }
+              }
+            ],
+            "cna": {
+              "title": "Panic when validating certificates with DSA public keys in crypto/x509",
+              "credits": [
+                {
+                  "lang": "en",
+                  "value": "Jakub Ciolek"
+                }
+              ],
+              "affected": [
+                {
+                  "vendor": "Go standard library",
+                  "product": "crypto/x509",
+                  "versions": [
+                    {
+                      "status": "affected",
+                      "version": "0",
+                      "lessThan": "1.24.8",
+                      "versionType": "semver"
+                    },
+                    {
+                      "status": "affected",
+                      "version": "1.25.0",
+                      "lessThan": "1.25.2",
+                      "versionType": "semver"
+                    }
+                  ],
+                  "packageName": "crypto/x509",
+                  "collectionURL": "https://pkg.go.dev",
+                  "defaultStatus": "unaffected",
+                  "programRoutines": [
+                    {
+                      "name": "alreadyInChain"
+                    },
+                    {
+                      "name": "Certificate.Verify"
+                    }
+                  ]
+                }
+              ],
+              "references": [
+                {
+                  "url": "https://go.dev/cl/709853"
+                },
+                {
+                  "url": "https://go.dev/issue/75675"
+                },
+                {
+                  "url": "https://groups.google.com/g/golang-announce/c/4Emdl2iQ_bI"
+                },
+                {
+                  "url": "https://pkg.go.dev/vuln/GO-2025-4013"
+                }
+              ],
+              "descriptions": [
+                {
+                  "lang": "en",
+                  "value": "Validating certificate chains which contain DSA public keys can cause programs to panic, due to a interface cast that assumes they implement the Equal method. This affects programs which validate arbitrary certificate chains."
+                }
+              ],
+              "problemTypes": [
+                {
+                  "descriptions": [
+                    {
+                      "lang": "en",
+                      "description": "CWE-248: Uncaught Exception"
+                    }
+                  ]
+                }
+              ],
+              "providerMetadata": {
+                "orgId": "1bb62c36-49e3-4200-9d77-64a1400537cc",
+                "shortName": "Go",
+                "dateUpdated": "2025-10-29T22:10:14.143Z"
+              }
+            }
+          },
+          "cveMetadata": {
+            "cveId": "CVE-2025-58188",
+            "state": "PUBLISHED",
+            "dateUpdated": "2025-11-04T21:13:38.109Z",
+            "dateReserved": "2025-08-27T14:50:58.692Z",
+            "assignerOrgId": "1bb62c36-49e3-4200-9d77-64a1400537cc",
+            "datePublished": "2025-10-29T22:10:14.143Z",
+            "assignerShortName": "Go"
+          },
+          "dataVersion": "5.2"
         }
       },
+      "additional_info": "### [CISA Vulnrichment Data](https://github.com/cisagov/vulnrichment)\n\n**SSVC Decision Points:**\n- id: CVE-2025-58188\n- role: CISA Coordinator\n- options: [{'Exploitation': 'none'}, {'Automatable': 'yes'}, {'Technical Impact': 'partial'}]\n- version: 2.0.3\n- timestamp: 2025-10-30T14:23:42.371985Z",
       "vulnerability": {
         "cve_id": "CVE-2025-58188",
         "package_name": "stdlib",
@@ -1596,8 +3010,11 @@
         "cvss_score": 7.5,
         "epss_score": null,
         "location_id": "/usr/local/bin/gosu",
-        "target": "registry:postgres:alpine"
-      }
+        "target": "registry:postgres:alpine",
+        "target_name": null,
+        "aliases": []
+      },
+      "aliases": []
     },
     {
       "id": "CVE-2025-61729::registry:postgres:alpine",
@@ -1749,8 +3166,149 @@
             "assignerShortName": "Go"
           },
           "dataVersion": "5.2"
+        },
+        "cisa": {
+          "dataType": "CVE_RECORD",
+          "containers": {
+            "adp": [
+              {
+                "title": "CISA ADP Vulnrichment",
+                "metrics": [
+                  {
+                    "cvssV3_1": {
+                      "scope": "UNCHANGED",
+                      "version": "3.1",
+                      "baseScore": 7.5,
+                      "attackVector": "NETWORK",
+                      "baseSeverity": "HIGH",
+                      "vectorString": "CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:N/I:N/A:H",
+                      "integrityImpact": "NONE",
+                      "userInteraction": "NONE",
+                      "attackComplexity": "LOW",
+                      "availabilityImpact": "HIGH",
+                      "privilegesRequired": "NONE",
+                      "confidentialityImpact": "NONE"
+                    }
+                  },
+                  {
+                    "other": {
+                      "type": "ssvc",
+                      "content": {
+                        "id": "CVE-2025-61729",
+                        "role": "CISA Coordinator",
+                        "options": [
+                          {
+                            "Exploitation": "none"
+                          },
+                          {
+                            "Automatable": "no"
+                          },
+                          {
+                            "Technical Impact": "partial"
+                          }
+                        ],
+                        "version": "2.0.3",
+                        "timestamp": "2025-12-02T21:52:36.341575Z"
+                      }
+                    }
+                  }
+                ],
+                "providerMetadata": {
+                  "orgId": "134c704f-9b21-4f2e-91b3-4a467353bcc0",
+                  "shortName": "CISA-ADP",
+                  "dateUpdated": "2025-12-02T21:52:53.822Z"
+                }
+              }
+            ],
+            "cna": {
+              "title": "Excessive resource consumption when printing error string for host certificate validation in crypto/x509",
+              "credits": [
+                {
+                  "lang": "en",
+                  "value": "Philippe Antoine (Catena cyber)"
+                }
+              ],
+              "affected": [
+                {
+                  "vendor": "Go standard library",
+                  "product": "crypto/x509",
+                  "versions": [
+                    {
+                      "status": "affected",
+                      "version": "0",
+                      "lessThan": "1.24.11",
+                      "versionType": "semver"
+                    },
+                    {
+                      "status": "affected",
+                      "version": "1.25.0",
+                      "lessThan": "1.25.5",
+                      "versionType": "semver"
+                    }
+                  ],
+                  "packageName": "crypto/x509",
+                  "collectionURL": "https://pkg.go.dev",
+                  "defaultStatus": "unaffected",
+                  "programRoutines": [
+                    {
+                      "name": "Certificate.VerifyHostname"
+                    },
+                    {
+                      "name": "Certificate.Verify"
+                    }
+                  ]
+                }
+              ],
+              "references": [
+                {
+                  "url": "https://go.dev/cl/725920"
+                },
+                {
+                  "url": "https://go.dev/issue/76445"
+                },
+                {
+                  "url": "https://groups.google.com/g/golang-announce/c/8FJoBkPddm4"
+                },
+                {
+                  "url": "https://pkg.go.dev/vuln/GO-2025-4155"
+                }
+              ],
+              "descriptions": [
+                {
+                  "lang": "en",
+                  "value": "Within HostnameError.Error(), when constructing an error string, there is no limit to the number of hosts that will be printed out. Furthermore, the error string is constructed by repeated string concatenation, leading to quadratic runtime. Therefore, a certificate provided by a malicious actor can result in excessive resource consumption."
+                }
+              ],
+              "problemTypes": [
+                {
+                  "descriptions": [
+                    {
+                      "lang": "en",
+                      "description": "CWE-400: Uncontrolled Resource Consumption"
+                    }
+                  ]
+                }
+              ],
+              "providerMetadata": {
+                "orgId": "1bb62c36-49e3-4200-9d77-64a1400537cc",
+                "shortName": "Go",
+                "dateUpdated": "2025-12-03T19:37:14.903Z"
+              }
+            }
+          },
+          "cveMetadata": {
+            "cveId": "CVE-2025-61729",
+            "state": "PUBLISHED",
+            "dateUpdated": "2025-12-03T19:37:14.903Z",
+            "dateReserved": "2025-09-30T15:05:03.605Z",
+            "assignerOrgId": "1bb62c36-49e3-4200-9d77-64a1400537cc",
+            "datePublished": "2025-12-02T18:54:10.166Z",
+            "assignerShortName": "Go"
+          },
+          "dataVersion": "5.2"
         }
       },
+      "additional_info": "### [CISA Vulnrichment Data](https://github.com/cisagov/vulnrichment)\n\n**SSVC Decision Points:**\n- id: CVE-2025-61729\n- role: CISA Coordinator\n- options: [{'Exploitation': 'none'}, {'Automatable': 'no'}, {'Technical Impact': 'partial'}]\n- version: 2.0.3\n- timestamp: 2025-12-02T21:52:36.341575Z",
       "vulnerability": {
         "cve_id": "CVE-2025-61729",
         "package_name": "stdlib",
@@ -1761,8 +3319,11 @@
         "cvss_score": 7.5,
         "epss_score": null,
         "location_id": "/usr/local/bin/gosu",
-        "target": "registry:postgres:alpine"
-      }
+        "target": "registry:postgres:alpine",
+        "target_name": null,
+        "aliases": []
+      },
+      "aliases": []
     },
     {
       "id": "CVE-2025-58189::registry:postgres:alpine",
@@ -1951,8 +3512,186 @@
             "assignerShortName": "Go"
           },
           "dataVersion": "5.2"
+        },
+        "cisa": {
+          "dataType": "CVE_RECORD",
+          "containers": {
+            "adp": [
+              {
+                "title": "CVE Program Container",
+                "references": [
+                  {
+                    "url": "http://www.openwall.com/lists/oss-security/2025/10/08/1"
+                  }
+                ],
+                "providerMetadata": {
+                  "orgId": "af854a3a-2127-422b-91ae-364da2661108",
+                  "shortName": "CVE",
+                  "dateUpdated": "2025-11-04T21:13:39.428Z"
+                }
+              },
+              {
+                "title": "CISA ADP Vulnrichment",
+                "metrics": [
+                  {
+                    "cvssV3_1": {
+                      "scope": "UNCHANGED",
+                      "version": "3.1",
+                      "baseScore": 5.3,
+                      "attackVector": "NETWORK",
+                      "baseSeverity": "MEDIUM",
+                      "vectorString": "CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:L/I:N/A:N",
+                      "integrityImpact": "NONE",
+                      "userInteraction": "NONE",
+                      "attackComplexity": "LOW",
+                      "availabilityImpact": "NONE",
+                      "privilegesRequired": "NONE",
+                      "confidentialityImpact": "LOW"
+                    }
+                  },
+                  {
+                    "other": {
+                      "type": "ssvc",
+                      "content": {
+                        "id": "CVE-2025-58189",
+                        "role": "CISA Coordinator",
+                        "options": [
+                          {
+                            "Exploitation": "none"
+                          },
+                          {
+                            "Automatable": "yes"
+                          },
+                          {
+                            "Technical Impact": "partial"
+                          }
+                        ],
+                        "version": "2.0.3",
+                        "timestamp": "2025-11-03T19:50:48.668117Z"
+                      }
+                    }
+                  }
+                ],
+                "providerMetadata": {
+                  "orgId": "134c704f-9b21-4f2e-91b3-4a467353bcc0",
+                  "shortName": "CISA-ADP",
+                  "dateUpdated": "2025-10-30T20:34:39.827Z"
+                }
+              }
+            ],
+            "cna": {
+              "title": "ALPN negotiation error contains attacker controlled information in crypto/tls",
+              "credits": [
+                {
+                  "lang": "en",
+                  "value": "National Cyber Security Centre Finland"
+                }
+              ],
+              "affected": [
+                {
+                  "vendor": "Go standard library",
+                  "product": "crypto/tls",
+                  "versions": [
+                    {
+                      "status": "affected",
+                      "version": "0",
+                      "lessThan": "1.24.8",
+                      "versionType": "semver"
+                    },
+                    {
+                      "status": "affected",
+                      "version": "1.25.0",
+                      "lessThan": "1.25.2",
+                      "versionType": "semver"
+                    }
+                  ],
+                  "packageName": "crypto/tls",
+                  "collectionURL": "https://pkg.go.dev",
+                  "defaultStatus": "unaffected",
+                  "programRoutines": [
+                    {
+                      "name": "negotiateALPN"
+                    },
+                    {
+                      "name": "Conn.Handshake"
+                    },
+                    {
+                      "name": "Conn.HandshakeContext"
+                    },
+                    {
+                      "name": "Conn.Read"
+                    },
+                    {
+                      "name": "Conn.Write"
+                    },
+                    {
+                      "name": "Dial"
+                    },
+                    {
+                      "name": "DialWithDialer"
+                    },
+                    {
+                      "name": "Dialer.Dial"
+                    },
+                    {
+                      "name": "Dialer.DialContext"
+                    },
+                    {
+                      "name": "QUICConn.Start"
+                    }
+                  ]
+                }
+              ],
+              "references": [
+                {
+                  "url": "https://go.dev/cl/707776"
+                },
+                {
+                  "url": "https://go.dev/issue/75652"
+                },
+                {
+                  "url": "https://groups.google.com/g/golang-announce/c/4Emdl2iQ_bI"
+                },
+                {
+                  "url": "https://pkg.go.dev/vuln/GO-2025-4008"
+                }
+              ],
+              "descriptions": [
+                {
+                  "lang": "en",
+                  "value": "When Conn.Handshake fails during ALPN negotiation the error contains attacker controlled information (the ALPN protocols sent by the client) which is not escaped."
+                }
+              ],
+              "problemTypes": [
+                {
+                  "descriptions": [
+                    {
+                      "lang": "en",
+                      "description": "CWE-117: Improper Output Neutralization for Logs"
+                    }
+                  ]
+                }
+              ],
+              "providerMetadata": {
+                "orgId": "1bb62c36-49e3-4200-9d77-64a1400537cc",
+                "shortName": "Go",
+                "dateUpdated": "2025-10-29T22:10:12.947Z"
+              }
+            }
+          },
+          "cveMetadata": {
+            "cveId": "CVE-2025-58189",
+            "state": "PUBLISHED",
+            "dateUpdated": "2025-11-04T21:13:39.428Z",
+            "dateReserved": "2025-08-27T14:50:58.692Z",
+            "assignerOrgId": "1bb62c36-49e3-4200-9d77-64a1400537cc",
+            "datePublished": "2025-10-29T22:10:12.947Z",
+            "assignerShortName": "Go"
+          },
+          "dataVersion": "5.2"
         }
       },
+      "additional_info": "### [CISA Vulnrichment Data](https://github.com/cisagov/vulnrichment)\n\n**SSVC Decision Points:**\n- id: CVE-2025-58189\n- role: CISA Coordinator\n- options: [{'Exploitation': 'none'}, {'Automatable': 'yes'}, {'Technical Impact': 'partial'}]\n- version: 2.0.3\n- timestamp: 2025-11-03T19:50:48.668117Z",
       "vulnerability": {
         "cve_id": "CVE-2025-58189",
         "package_name": "stdlib",
@@ -1963,8 +3702,11 @@
         "cvss_score": 5.3,
         "epss_score": null,
         "location_id": "/usr/local/bin/gosu",
-        "target": "registry:postgres:alpine"
-      }
+        "target": "registry:postgres:alpine",
+        "target_name": null,
+        "aliases": []
+      },
+      "aliases": []
     },
     {
       "id": "CVE-2025-58183::registry:postgres:alpine",
@@ -2129,8 +3871,162 @@
             "assignerShortName": "Go"
           },
           "dataVersion": "5.2"
+        },
+        "cisa": {
+          "dataType": "CVE_RECORD",
+          "containers": {
+            "adp": [
+              {
+                "title": "CVE Program Container",
+                "references": [
+                  {
+                    "url": "http://www.openwall.com/lists/oss-security/2025/10/08/1"
+                  }
+                ],
+                "providerMetadata": {
+                  "orgId": "af854a3a-2127-422b-91ae-364da2661108",
+                  "shortName": "CVE",
+                  "dateUpdated": "2025-11-04T21:13:32.834Z"
+                }
+              },
+              {
+                "title": "CISA ADP Vulnrichment",
+                "metrics": [
+                  {
+                    "cvssV3_1": {
+                      "scope": "UNCHANGED",
+                      "version": "3.1",
+                      "baseScore": 4.3,
+                      "attackVector": "NETWORK",
+                      "baseSeverity": "MEDIUM",
+                      "vectorString": "CVSS:3.1/AV:N/AC:L/PR:N/UI:R/S:U/C:N/I:N/A:L",
+                      "integrityImpact": "NONE",
+                      "userInteraction": "REQUIRED",
+                      "attackComplexity": "LOW",
+                      "availabilityImpact": "LOW",
+                      "privilegesRequired": "NONE",
+                      "confidentialityImpact": "NONE"
+                    }
+                  },
+                  {
+                    "other": {
+                      "type": "ssvc",
+                      "content": {
+                        "id": "CVE-2025-58183",
+                        "role": "CISA Coordinator",
+                        "options": [
+                          {
+                            "Exploitation": "none"
+                          },
+                          {
+                            "Automatable": "no"
+                          },
+                          {
+                            "Technical Impact": "partial"
+                          }
+                        ],
+                        "version": "2.0.3",
+                        "timestamp": "2025-10-30T14:22:41.219110Z"
+                      }
+                    }
+                  }
+                ],
+                "providerMetadata": {
+                  "orgId": "134c704f-9b21-4f2e-91b3-4a467353bcc0",
+                  "shortName": "CISA-ADP",
+                  "dateUpdated": "2025-10-30T14:23:04.000Z"
+                }
+              }
+            ],
+            "cna": {
+              "title": "Unbounded allocation when parsing GNU sparse map in archive/tar",
+              "credits": [
+                {
+                  "lang": "en",
+                  "value": "Harshit Gupta (Mr HAX)"
+                }
+              ],
+              "affected": [
+                {
+                  "vendor": "Go standard library",
+                  "product": "archive/tar",
+                  "versions": [
+                    {
+                      "status": "affected",
+                      "version": "0",
+                      "lessThan": "1.24.8",
+                      "versionType": "semver"
+                    },
+                    {
+                      "status": "affected",
+                      "version": "1.25.0",
+                      "lessThan": "1.25.2",
+                      "versionType": "semver"
+                    }
+                  ],
+                  "packageName": "archive/tar",
+                  "collectionURL": "https://pkg.go.dev",
+                  "defaultStatus": "unaffected",
+                  "programRoutines": [
+                    {
+                      "name": "readGNUSparseMap1x0"
+                    },
+                    {
+                      "name": "Reader.Next"
+                    }
+                  ]
+                }
+              ],
+              "references": [
+                {
+                  "url": "https://go.dev/cl/709861"
+                },
+                {
+                  "url": "https://go.dev/issue/75677"
+                },
+                {
+                  "url": "https://groups.google.com/g/golang-announce/c/4Emdl2iQ_bI"
+                },
+                {
+                  "url": "https://pkg.go.dev/vuln/GO-2025-4014"
+                }
+              ],
+              "descriptions": [
+                {
+                  "lang": "en",
+                  "value": "tar.Reader does not set a maximum size on the number of sparse region data blocks in GNU tar pax 1.0 sparse files. A maliciously-crafted archive containing a large number of sparse regions can cause a Reader to read an unbounded amount of data from the archive into memory. When reading from a compressed source, a small compressed input can result in large allocations."
+                }
+              ],
+              "problemTypes": [
+                {
+                  "descriptions": [
+                    {
+                      "lang": "en",
+                      "description": "CWE-400: Uncontrolled Resource Consumption"
+                    }
+                  ]
+                }
+              ],
+              "providerMetadata": {
+                "orgId": "1bb62c36-49e3-4200-9d77-64a1400537cc",
+                "shortName": "Go",
+                "dateUpdated": "2025-10-29T22:10:14.376Z"
+              }
+            }
+          },
+          "cveMetadata": {
+            "cveId": "CVE-2025-58183",
+            "state": "PUBLISHED",
+            "dateUpdated": "2025-11-04T21:13:32.834Z",
+            "dateReserved": "2025-08-27T14:50:58.691Z",
+            "assignerOrgId": "1bb62c36-49e3-4200-9d77-64a1400537cc",
+            "datePublished": "2025-10-29T22:10:14.376Z",
+            "assignerShortName": "Go"
+          },
+          "dataVersion": "5.2"
         }
       },
+      "additional_info": "### [CISA Vulnrichment Data](https://github.com/cisagov/vulnrichment)\n\n**SSVC Decision Points:**\n- id: CVE-2025-58183\n- role: CISA Coordinator\n- options: [{'Exploitation': 'none'}, {'Automatable': 'no'}, {'Technical Impact': 'partial'}]\n- version: 2.0.3\n- timestamp: 2025-10-30T14:22:41.219110Z",
       "vulnerability": {
         "cve_id": "CVE-2025-58183",
         "package_name": "stdlib",
@@ -2141,8 +4037,11 @@
         "cvss_score": 4.3,
         "epss_score": null,
         "location_id": "/usr/local/bin/gosu",
-        "target": "registry:postgres:alpine"
-      }
+        "target": "registry:postgres:alpine",
+        "target_name": null,
+        "aliases": []
+      },
+      "aliases": []
     },
     {
       "id": "CVE-2025-61727::registry:postgres:alpine",
@@ -2285,8 +4184,140 @@
             "assignerShortName": "Go"
           },
           "dataVersion": "5.2"
+        },
+        "cisa": {
+          "dataType": "CVE_RECORD",
+          "containers": {
+            "adp": [
+              {
+                "title": "CISA ADP Vulnrichment",
+                "metrics": [
+                  {
+                    "cvssV3_1": {
+                      "scope": "UNCHANGED",
+                      "version": "3.1",
+                      "baseScore": 6.5,
+                      "attackVector": "NETWORK",
+                      "baseSeverity": "MEDIUM",
+                      "vectorString": "CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:L/I:L/A:N",
+                      "integrityImpact": "LOW",
+                      "userInteraction": "NONE",
+                      "attackComplexity": "LOW",
+                      "availabilityImpact": "NONE",
+                      "privilegesRequired": "NONE",
+                      "confidentialityImpact": "LOW"
+                    }
+                  },
+                  {
+                    "other": {
+                      "type": "ssvc",
+                      "content": {
+                        "id": "CVE-2025-61727",
+                        "role": "CISA Coordinator",
+                        "options": [
+                          {
+                            "Exploitation": "none"
+                          },
+                          {
+                            "Automatable": "yes"
+                          },
+                          {
+                            "Technical Impact": "partial"
+                          }
+                        ],
+                        "version": "2.0.3",
+                        "timestamp": "2025-12-03T22:06:13.958433Z"
+                      }
+                    }
+                  }
+                ],
+                "providerMetadata": {
+                  "orgId": "134c704f-9b21-4f2e-91b3-4a467353bcc0",
+                  "shortName": "CISA-ADP",
+                  "dateUpdated": "2025-12-03T21:45:44.520Z"
+                }
+              }
+            ],
+            "cna": {
+              "title": "Improper application of excluded DNS name constraints when verifying wildcard names in crypto/x509",
+              "affected": [
+                {
+                  "vendor": "Go standard library",
+                  "product": "crypto/x509",
+                  "versions": [
+                    {
+                      "status": "affected",
+                      "version": "0",
+                      "lessThan": "1.24.11",
+                      "versionType": "semver"
+                    },
+                    {
+                      "status": "affected",
+                      "version": "1.25.0",
+                      "lessThan": "1.25.5",
+                      "versionType": "semver"
+                    }
+                  ],
+                  "packageName": "crypto/x509",
+                  "collectionURL": "https://pkg.go.dev",
+                  "defaultStatus": "unaffected",
+                  "programRoutines": [
+                    {
+                      "name": "Certificate.Verify"
+                    }
+                  ]
+                }
+              ],
+              "references": [
+                {
+                  "url": "https://go.dev/cl/723900"
+                },
+                {
+                  "url": "https://go.dev/issue/76442"
+                },
+                {
+                  "url": "https://groups.google.com/g/golang-announce/c/8FJoBkPddm4"
+                },
+                {
+                  "url": "https://pkg.go.dev/vuln/GO-2025-4175"
+                }
+              ],
+              "descriptions": [
+                {
+                  "lang": "en",
+                  "value": "An excluded subdomain constraint in a certificate chain does not restrict the usage of wildcard SANs in the leaf certificate. For example a constraint that excludes the subdomain test.example.com does not prevent a leaf certificate from claiming the SAN *.example.com."
+                }
+              ],
+              "problemTypes": [
+                {
+                  "descriptions": [
+                    {
+                      "lang": "en",
+                      "description": "CWE-295: Improper Certificate Validation"
+                    }
+                  ]
+                }
+              ],
+              "providerMetadata": {
+                "orgId": "1bb62c36-49e3-4200-9d77-64a1400537cc",
+                "shortName": "Go",
+                "dateUpdated": "2025-12-03T19:37:15.054Z"
+              }
+            }
+          },
+          "cveMetadata": {
+            "cveId": "CVE-2025-61727",
+            "state": "PUBLISHED",
+            "dateUpdated": "2025-12-03T22:06:17.007Z",
+            "dateReserved": "2025-09-30T15:05:03.605Z",
+            "assignerOrgId": "1bb62c36-49e3-4200-9d77-64a1400537cc",
+            "datePublished": "2025-12-03T19:37:15.054Z",
+            "assignerShortName": "Go"
+          },
+          "dataVersion": "5.2"
         }
       },
+      "additional_info": "### [CISA Vulnrichment Data](https://github.com/cisagov/vulnrichment)\n\n**SSVC Decision Points:**\n- id: CVE-2025-61727\n- role: CISA Coordinator\n- options: [{'Exploitation': 'none'}, {'Automatable': 'yes'}, {'Technical Impact': 'partial'}]\n- version: 2.0.3\n- timestamp: 2025-12-03T22:06:13.958433Z",
       "vulnerability": {
         "cve_id": "CVE-2025-61727",
         "package_name": "stdlib",
@@ -2297,8 +4328,11 @@
         "cvss_score": 6.5,
         "epss_score": null,
         "location_id": "/usr/local/bin/gosu",
-        "target": "registry:postgres:alpine"
-      }
+        "target": "registry:postgres:alpine",
+        "target_name": null,
+        "aliases": []
+      },
+      "aliases": []
     }
   ]
 }
