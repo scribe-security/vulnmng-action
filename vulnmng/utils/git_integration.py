@@ -129,7 +129,12 @@ class GitIntegration:
     def add(self, file_path: str):
         self._run_git(["add", file_path])
 
-    def commit(self, message: str):
+    def commit(self, message: str) -> bool:
+        """Commit staged changes if any exist.
+        
+        Returns:
+            bool: True if a commit was made, False if there were no changes
+        """
         # Check if there are staged changes
         try:
             subprocess.run(
@@ -140,12 +145,13 @@ class GitIntegration:
             )
             # If check=True succeeds, there are NO changes (exit code 0)
             logger.debug("No changes to commit")
-            return
+            return False
         except subprocess.CalledProcessError:
             # Exit code 1 means there ARE changes, proceed with commit
             pass
         
         self._run_git(["commit", "-m", message])
+        return True
 
     def push(self):
         args = ["push"]

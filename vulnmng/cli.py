@@ -203,9 +203,11 @@ def main():
             # Just use absolute path for git add, usually works if file is inside repo
             git_integration.add(abs_json_path)
             
-            git_integration.commit(f"Update vulnerabilities scan results [skip ci]")
-            git_integration.push()
-            logger.info("Git push completed.")
+            if git_integration.commit(f"Update vulnerabilities scan results [skip ci]"):
+                git_integration.push()
+                logger.info("Git push completed.")
+            else:
+                logger.info("No changes to push.")
 
         # 6. Failure Logic
         if args.fail_on and args.fail_on != "None":
@@ -347,9 +349,11 @@ def main():
             for f in files_to_add:
                 git_integration.add(f)
             
-            git_integration.commit(f"Update vulnerability reports [skip ci]")
-            git_integration.push()
-            logger.info("Git push completed.")
+            if git_integration.commit(f"Update vulnerability reports [skip ci]"):
+                git_integration.push()
+                logger.info("Git push completed.")
+            else:
+                logger.info("No changes to push.")
 
     else:
         parser.print_help()
