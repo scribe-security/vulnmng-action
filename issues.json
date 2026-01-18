@@ -349,7 +349,8 @@
         "location_id": "/usr/local/bin/gosu",
         "target": "registry:postgres:alpine",
         "target_name": null,
-        "aliases": []
+        "aliases": [],
+        "ecosystem": null
       },
       "aliases": []
     },
@@ -708,7 +709,8 @@
         "location_id": "/usr/local/bin/gosu",
         "target": "registry:postgres:alpine",
         "target_name": null,
-        "aliases": []
+        "aliases": [],
+        "ecosystem": null
       },
       "aliases": []
     },
@@ -1049,7 +1051,8 @@
         "location_id": "/usr/local/bin/gosu",
         "target": "registry:postgres:alpine",
         "target_name": null,
-        "aliases": []
+        "aliases": [],
+        "ecosystem": null
       },
       "aliases": []
     },
@@ -1468,7 +1471,8 @@
         "location_id": "/usr/local/bin/gosu",
         "target": "registry:postgres:alpine",
         "target_name": null,
-        "aliases": []
+        "aliases": [],
+        "ecosystem": null
       },
       "aliases": []
     },
@@ -1797,7 +1801,8 @@
         "location_id": "/usr/local/bin/gosu",
         "target": "registry:postgres:alpine",
         "target_name": null,
-        "aliases": []
+        "aliases": [],
+        "ecosystem": null
       },
       "aliases": []
     },
@@ -2156,7 +2161,8 @@
         "location_id": "/usr/local/bin/gosu",
         "target": "registry:postgres:alpine",
         "target_name": null,
-        "aliases": []
+        "aliases": [],
+        "ecosystem": null
       },
       "aliases": []
     },
@@ -2677,7 +2683,8 @@
         "location_id": "/usr/local/bin/gosu",
         "target": "registry:postgres:alpine",
         "target_name": null,
-        "aliases": []
+        "aliases": [],
+        "ecosystem": null
       },
       "aliases": []
     },
@@ -3012,7 +3019,8 @@
         "location_id": "/usr/local/bin/gosu",
         "target": "registry:postgres:alpine",
         "target_name": null,
-        "aliases": []
+        "aliases": [],
+        "ecosystem": null
       },
       "aliases": []
     },
@@ -3321,7 +3329,8 @@
         "location_id": "/usr/local/bin/gosu",
         "target": "registry:postgres:alpine",
         "target_name": null,
-        "aliases": []
+        "aliases": [],
+        "ecosystem": null
       },
       "aliases": []
     },
@@ -3704,7 +3713,8 @@
         "location_id": "/usr/local/bin/gosu",
         "target": "registry:postgres:alpine",
         "target_name": null,
-        "aliases": []
+        "aliases": [],
+        "ecosystem": null
       },
       "aliases": []
     },
@@ -4039,7 +4049,8 @@
         "location_id": "/usr/local/bin/gosu",
         "target": "registry:postgres:alpine",
         "target_name": null,
-        "aliases": []
+        "aliases": [],
+        "ecosystem": null
       },
       "aliases": []
     },
@@ -4330,7 +4341,8 @@
         "location_id": "/usr/local/bin/gosu",
         "target": "registry:postgres:alpine",
         "target_name": null,
-        "aliases": []
+        "aliases": [],
+        "ecosystem": null
       },
       "aliases": []
     }
