@@ -103,33 +103,36 @@ class GitIntegration:
             # We don't raise here yet, but we should probably inform the CLI
 
     def pull(self):
-        # Try to pull, but don't fail if there's no upstream (new branch) or auth issues
+        """Pull latest changes from remote branch.
+        
+        Attempts to fetch and pull, but doesn't fail if branch is new or has no upstream.
+        """
+        logger.debug(f"Attempting to pull branch: {self.branch}")
+        
+        # First try to fetch to get latest refs
         try:
-            result = subprocess.run(
-                ["git", "pull"],
-                cwd=self.repo_path,
-                capture_output=True,
-                text=True,
-                check=True
-            )
-            if result.stdout:
-                logger.debug(result.stdout)
+            self._run_git(["fetch", "origin", self.branch], raise_error=False)
+        except Exception as e:
+            logger.debug(f"Fetch failed (may be new branch): {e}")
+        
+        # Then try to pull
+        try:
+            self._run_git(["pull", "origin", self.branch], raise_error=True)
+            logger.info(f"Successfully pulled latest changes from {self.branch}")
         except subprocess.CalledProcessError as e:
             stderr = e.stderr.lower() if e.stderr else ""
             # These are expected/acceptable scenarios - don't fail
             if any(phrase in stderr for phrase in [
                 "no tracking information",
                 "there is no tracking information",
-                "could not read username",
-                "could not read password",
-                "authentication failed",
-                "no such device or address"  # Git can't prompt for credentials
+                "couldn't find remote ref",
+                "does not exist"
             ]):
-                logger.debug(f"Skipping pull: {e.stderr.strip()}")
+                logger.info(f"Branch {self.branch} has no remote yet (will be created on push)")
             else:
                 # Unexpected error - log but continue (don't fail the whole operation)
                 logger.warning(f"Git pull failed: {e.stderr}")
-                logger.debug("Continuing without pull...")
+                logger.info("Continuing without pull...")
 
     def add(self, file_path: str):
         self._run_git(["add", file_path])
