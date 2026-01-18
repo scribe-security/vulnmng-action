@@ -162,12 +162,16 @@ def main():
                     enhancer_name = enhancer.__class__.__name__.lower().replace('enrichment', '')
                     enrichment_data = details.get(enhancer_name, {})
                     if enrichment_data:
-                        summary = enhancer.format_summary(enrichment_data)
+                        # Pass CVE ID to formatter if available
+                        if hasattr(enhancer, 'format_summary'):
+                            summary = enhancer.format_summary(enrichment_data, cve_id=vuln.cve_id)
+                        else:
+                            summary = enhancer.format_summary(enrichment_data)
                         if summary:
                             additional_info_parts.append(summary)
                 
                 if additional_info_parts:
-                    issue.additional_info = "\n\n---\n\n".join(additional_info_parts)
+                    issue.additional_info = " | ".join(additional_info_parts)
             
             issues.append(issue)
         
@@ -301,12 +305,16 @@ def main():
                                 enhancer_name = enhancer.__class__.__name__.lower().replace('enrichment', '')
                                 data = enrichment_data.get(enhancer_name, {})
                                 if data:
-                                    summary = enhancer.format_summary(data)
+                                    # Pass CVE ID to formatter if available
+                                    if hasattr(enhancer, 'format_summary'):
+                                        summary = enhancer.format_summary(data, cve_id=issue.cve_id)
+                                    else:
+                                        summary = enhancer.format_summary(data)
                                     if summary:
                                         additional_info_parts.append(summary)
                             
                             if additional_info_parts:
-                                issue.additional_info = "\n\n---\n\n".join(additional_info_parts)
+                                issue.additional_info = " | ".join(additional_info_parts)
                                 # Also update details for persistence
                                 issue.details.update(enrichment_data)
                 

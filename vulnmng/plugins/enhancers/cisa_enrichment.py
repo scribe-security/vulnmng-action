@@ -32,7 +32,14 @@ class CisaEnrichment(EnhancerBase):
         return {}
 
     def enhance(self, vulnerability: Vulnerability) -> Dict[str, Any]:
-        """Enhance a vulnerability and return the raw enrichment data."""
+        """Enhance a vulnerability and return structured enrichment data.
+        
+        Returns dict with:
+        - exploitability: SSVC exploitation status from containers.adp
+        - kev: KEV catalog entry if listed
+        - cwe: CWE ID and description from containers.cna
+        - raw_data: Full CISA record for reference
+        """
         cve_id = vulnerability.cve_id
         # Parse CVE ID: CVE-YYYY-NNNNN
         parts = cve_id.split("-")
@@ -56,13 +63,14 @@ class CisaEnrichment(EnhancerBase):
         url = f"{self.BASE_URL}/{year}/{folder}/{cve_id}.json"
         
         enrichment_data = {}
+        cisa_data = None
+        
         try:
             logger.debug(f"Fetching enrichment for {cve_id} from {url}")
             response = requests.get(url, timeout=5)
             if response.status_code == 200:
-                data = response.json()
-                self._enrich_vulnerability(vulnerability, data)
-                enrichment_data = data
+                cisa_data = response.json()
+                enrichment_data["raw_data"] = cisa_data
             elif response.status_code == 404:
                 logger.debug(f"No CISA enrichment found for {cve_id}")
             else:
@@ -70,7 +78,46 @@ class CisaEnrichment(EnhancerBase):
         except Exception as e:
             logger.error(f"Error fetching CISA data: {e}")
         
-        # Check KEV catalog
+        # Extract structured data from CISA record
+        if cisa_data:
+            containers = cisa_data.get("containers", {})
+            
+            # 1. Extract exploitability from containers.adp (SSVC)
+            adp = containers.get("adp", [])
+            for entry in adp:
+                if entry.get("title") == "CISA ADP Vulnrichment":
+                    metrics = entry.get("metrics", [])
+                    for metric in metrics:
+                        ssvc = metric.get("other", {})
+                        if ssvc.get("type") == "ssvc":
+                            content = ssvc.get("content", {})
+                            options = content.get("options", [])
+                            for option in options:
+                                if "Exploitation" in option:
+                                    enrichment_data["exploitability"] = option["Exploitation"]
+                                    break
+                    if "exploitability" in enrichment_data:
+                        break
+            
+            # 2. Extract CWE from containers.cna
+            cna = containers.get("cna", {})
+            problem_types = cna.get("problemTypes", [])
+            for problem_type in problem_types:
+                descriptions = problem_type.get("descriptions", [])
+                for desc in descriptions:
+                    if desc.get("type") == "CWE" and "cweId" in desc:
+                        enrichment_data["cwe"] = {
+                            "id": desc.get("cweId"),
+                            "description": desc.get("description", "")
+                        }
+                        break
+                if "cwe" in enrichment_data:
+                    break
+            
+            # Store containers for format_summary to access references
+            enrichment_data["containers"] = containers
+        
+        # 3. Check KEV catalog
         kev_data = self._get_kev_data()
         kev_vulnerabilities = kev_data.get("vulnerabilities", [])
         kev_entry = next((v for v in kev_vulnerabilities if v.get("cveID") == cve_id), None)
@@ -115,86 +162,89 @@ class CisaEnrichment(EnhancerBase):
             
         # TODO: Add more specific enrichment fields if needed (e.g. kev, ssvc)
     
-    def format_summary(self, enrichment_data: dict) -> str:
-        """Format CISA enrichment data into compact text summary."""
+    def format_summary(self, enrichment_data: dict, cve_id: str = None) -> str:
+        """Format CISA enrichment data into markdown text for additional info column.
+        
+        Creates a formatted markdown block with:
+        - Exploitability status (from SSVC)
+        - KEV status and ransomware usage
+        - CWE information
+        - Available exploits with references
+        - Link to CISA vulnrichment data
+        
+        Note: CVSS data is now sourced from Grype and displayed in separate columns.
+        """
         if not enrichment_data:
             return ""
         
-        parts = []
+        markdown_parts = []
         
-        # KEV Information
+        # 1. Exploitability Status (SSVC from ADP)
+        exploitability = enrichment_data.get("exploitability")
+        if exploitability:
+            exploit_emoji = {
+                "none": "🟢",
+                "poc": "🟡", 
+                "active": "🔴"
+            }.get(exploitability.lower(), "⚪")
+            markdown_parts.append(f"{exploit_emoji} **Exploitability**: {exploitability.upper()}")
+        
+        # 2. KEV Information (critical security info)
         kev_entry = enrichment_data.get("kev")
         if kev_entry:
-            kev_info = f"KEV: {kev_entry.get('vulnerabilityName', 'N/A')}"
+            vuln_name = kev_entry.get('vulnerabilityName', 'N/A')
+            ransomware = ""
             if kev_entry.get('knownRansomwareCampaignUse') == 'Known':
-                kev_info += " (Ransomware)"
-            parts.append(kev_info)
+                ransomware = " ⚠️ **Used in Ransomware**"
+            markdown_parts.append(f"**KEV Listed**: {vuln_name}{ransomware}")
         
-        # CVSS Vectors and Exploitability
+        # 3. CWE Information
+        cwe = enrichment_data.get("cwe")
+        if cwe:
+            cwe_id = cwe.get("id", "")
+            cwe_desc = cwe.get("description", "")
+            markdown_parts.append(f"**{cwe_id}**: {cwe_desc}")
+        
+        # 4. References and Exploits (threat intelligence)
         containers = enrichment_data.get("containers", {})
-        cna = containers.get("cna", {})
-        metrics = cna.get("metrics", [])
-        
-        cvss_parts = []
-        for metric in metrics:
-            cvss_v3_1 = metric.get("cvssV3_1", {})
-            if cvss_v3_1:
-                vector_string = cvss_v3_1.get("vectorString", "N/A")
-                base_score = cvss_v3_1.get("baseScore", "N/A")
-                base_severity = cvss_v3_1.get("baseSeverity", "N/A")
-                cvss_parts.append(f"CVSS v3.1: {base_score} ({base_severity}) {vector_string}")
+        if containers:
+            cna = containers.get("cna", {})
+            references = cna.get("references", [])
+            exploit_refs = [ref for ref in references if any(tag in ref.get("tags", []) for tag in ["exploit", "Exploit"])]
             
-            cvss_v3_0 = metric.get("cvssV3_0", {})
-            if cvss_v3_0:
-                vector_string = cvss_v3_0.get("vectorString", "N/A")
-                base_score = cvss_v3_0.get("baseScore", "N/A")
-                cvss_parts.append(f"CVSS v3.0: {base_score} {vector_string}")
-            
-            cvss_v2 = metric.get("cvssV2_0", {})
-            if cvss_v2:
-                vector_string = cvss_v2.get("vectorString", "N/A")
-                base_score = cvss_v2.get("baseScore", "N/A")
-                cvss_parts.append(f"CVSS v2.0: {base_score} {vector_string}")
+            if exploit_refs:
+                exploit_count = len(exploit_refs)
+                exploit_links = []
+                for ref in exploit_refs[:3]:  # Show up to 3 exploit links
+                    url = ref.get("url", "")
+                    if url:
+                        # Extract domain for display
+                        domain = url.split("//")[-1].split("/")[0]
+                        exploit_links.append(f"[{domain}]({url})")
+                
+                exploit_text = f"**🔴 {exploit_count} Exploit(s) Available**"
+                if exploit_links:
+                    exploit_text += f": {', '.join(exploit_links)}"
+                if exploit_count > 3:
+                    exploit_text += f" (+{exploit_count - 3} more)"
+                markdown_parts.append(exploit_text)
         
-        if cvss_parts:
-            parts.extend(cvss_parts)
+        # 5. Add link to specific CISA vulnrichment JSON file
+        if cve_id and cve_id.startswith("CVE-"):
+            cve_parts = cve_id.split("-")
+            if len(cve_parts) == 3:
+                year = cve_parts[1]
+                id_num = cve_parts[2]
+                
+                # Determine folder structure
+                if len(id_num) == 4:
+                    folder = f"{id_num[0]}xxx"
+                elif len(id_num) >= 5:
+                    folder = f"{id_num[:-3]}xxx"
+                else:
+                    folder = "xxxx"
+                
+                cisa_url = f"https://raw.githubusercontent.com/cisagov/vulnrichment/develop/{year}/{folder}/{cve_id}.json"
+                markdown_parts.append(f"[View CISA Data]({cisa_url})")
         
-        # References and Exploits
-        references = cna.get("references", [])
-        exploit_refs = [ref for ref in references if any(tag in ref.get("tags", []) for tag in ["exploit", "Exploit"])]
-        
-        if exploit_refs:
-            exploit_count = len(exploit_refs)
-            parts.append(f"Exploits: {exploit_count} available")
-        
-        # SSVC Decision Points
-        adp_list = containers.get("adp", [])
-        ssvc_parts = []
-        for adp in adp_list:
-            if "metrics" in adp:
-                for adp_metric in adp.get("metrics", []):
-                    ssvc = adp_metric.get("other", {})
-                    if ssvc.get("type") == "ssvc":
-                        content = ssvc.get("content", {})
-                        # Extract options if they exist
-                        if "options" in content and isinstance(content["options"], list):
-                            for option in content["options"]:
-                                if isinstance(option, dict):
-                                    for k, v in option.items():
-                                        ssvc_parts.append(f"{k}: {v}")
-                        else:
-                            # Extract key SSVC values from other fields
-                            for key, value in content.items():
-                                if isinstance(value, dict):
-                                    for sub_key, sub_value in value.items():
-                                        if sub_key in ['Exploitation', 'Automatable', 'Technical Impact']:
-                                            ssvc_parts.append(f"{sub_key}: {sub_value}")
-                                elif key in ['id', 'role', 'version', 'timestamp']:
-                                    continue  # Skip metadata
-                                else:
-                                    ssvc_parts.append(f"{key}: {value}")
-        
-        if ssvc_parts:
-            parts.append("SSVC: " + ", ".join(ssvc_parts))
-        
-        return " | ".join(parts) if parts else ""
+        return " | ".join(markdown_parts) if markdown_parts else ""

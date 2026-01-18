@@ -52,6 +52,12 @@ class GrypeScanner(ScannerBase):
             # Extract ecosystem/language
             ecosystem = artifact.get("type") or artifact.get("language")
                 
+            # Extract CVSS vector and score
+            cvss_score, cvss_vector = self._get_cvss_data(vuln_data)
+            
+            # Extract EPSS score
+            epss_score = self._get_epss(vuln_data)
+            
             vuln = Vulnerability(
                 cve_id=primary_id,
                 package_name=artifact.get("name"),
@@ -59,7 +65,9 @@ class GrypeScanner(ScannerBase):
                 severity=severity,
                 fix_version=self._get_fix_version(vuln_data),
                 description=vuln_data.get("description"),
-                cvss_score=self._get_cvss(vuln_data),
+                cvss_score=cvss_score,
+                cvss_vector=cvss_vector,
+                epss_score=epss_score,
                 location_id=location_id,
                 target=target,
                 aliases=aliases,
@@ -74,16 +82,48 @@ class GrypeScanner(ScannerBase):
             return vuln_data.get("fix", {}).get("versions", [None])[0]
         return None
 
-    def _get_cvss(self, vuln_data: dict) -> float:
-        # Try to find CVSS score in metrics
+    def _get_cvss_data(self, vuln_data: dict) -> tuple[float, str]:
+        """Extract CVSS score and vector string from vulnerability data.
+        
+        Returns:
+            tuple: (cvss_score, cvss_vector) or (None, None) if not available
+        """
         metrics = vuln_data.get("cvss", [])
         if metrics:
             # Prioritize v3 over v2
             for m in metrics:
                 if m.get("version", "").startswith("3"):
-                    return float(m.get("metrics", {}).get("baseScore", 0.0))
+                    score = m.get("metrics", {}).get("baseScore")
+                    vector = m.get("vector")
+                    return (float(score) if score else None, vector)
             # Fallback to first metric
-            return float(metrics[0].get("metrics", {}).get("baseScore", 0.0))
+            first = metrics[0]
+            score = first.get("metrics", {}).get("baseScore")
+            vector = first.get("vector")
+            return (float(score) if score else None, vector)
+        return None, None
+    
+    def _get_epss(self, vuln_data: dict) -> float:
+        """Extract EPSS (Exploit Prediction Scoring System) score.
+        
+        Grype returns EPSS as an array of dicts with format:
+        [{'cve': 'CVE-2025-13836', 'epss': 0.00087, 'percentile': 0.25444, 'date': '2026-01-17'}]
+        
+        Returns:
+            float: EPSS score or None if not available
+        """
+        epss_data = vuln_data.get("epss")
+        if epss_data:
+            # EPSS is an array, take first entry
+            if isinstance(epss_data, list) and len(epss_data) > 0:
+                first_entry = epss_data[0]
+                if isinstance(first_entry, dict):
+                    score = first_entry.get("epss")
+                    return float(score) if score is not None else None
+            # Fallback for dict format (in case format changes)
+            elif isinstance(epss_data, dict):
+                score = epss_data.get("score") or epss_data.get("epss")
+                return float(score) if score is not None else None
         return None
     
     def _extract_ids(self, match: dict) -> tuple[str, list[str]]:

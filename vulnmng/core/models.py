@@ -27,6 +27,7 @@ class Vulnerability(BaseModel):
     fix_version: Optional[str] = None
     description: Optional[str] = None
     cvss_score: Optional[float] = None
+    cvss_vector: Optional[str] = None # CVSS vector string (e.g., CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:H/I:H/A:H)
     epss_score: Optional[float] = None
     location_id: Optional[str] = None # Identifying where it was found (e.g. path in image)
     target: str # The scan target (e.g. image name or repo path)

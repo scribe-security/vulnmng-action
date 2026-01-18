@@ -63,8 +63,8 @@ class ReportGenerator:
             
             # Table
             f.write("## Vulnerabilities\n")
-            f.write("| Target | Target Name | ID | Package | Version | Severity | Status | Fix Version | User Comment | Description | Additional Info |\n")
-            f.write("|---|---|---|---|---|---|---|---|---|---|---|\n")
+            f.write("| Target | Target Name | ID | Package | Version | Severity | CVSS | EPSS | Status | Fix Version | User Comment | Description | Additional Info |\n")
+            f.write("|---|---|---|---|---|---|---|---|---|---|---|---|---|\n")
             
             # Sort by status (new first), then Severity
             sorted_issues = sorted(self.issues, key=lambda x: (
@@ -75,8 +75,10 @@ class ReportGenerator:
             for issue in sorted_issues:
                 v = issue.vulnerability
                 status = self._get_status_from_labels(issue.labels)
-                desc = v.description or ""
-                comment = issue.user_comment or ""
+                
+                # Sanitize description and comment to prevent table breaks
+                desc = (v.description or "").replace('\n', ' ').replace('\r', ' ')
+                comment = (issue.user_comment or "").replace('\n', ' ').replace('\r', ' ')
                 
                 # Create link for CVE/GHSA
                 cve_id_display = self._format_id_with_link(v.cve_id)
@@ -87,10 +89,20 @@ class ReportGenerator:
                 # Format additional info for table
                 additional_info = ""
                 if issue.additional_info:
-                    # Escape pipes in additional info to avoid breaking table
-                    additional_info = issue.additional_info.replace('|', '\\|')
+                    # Escape pipes and newlines in additional info to avoid breaking table
+                    additional_info = issue.additional_info.replace('|', '\\|').replace('\n', ' ').replace('\r', ' ')
                 
-                f.write(f"| {v.target} | {v.target_name or 'N/A'} | {cve_id_display} | {package_display} | {v.version} | {v.severity.value} | {status} | {v.fix_version or 'N/A'} | {comment} | {desc} | {additional_info} |\n")
+                # Format CVSS - show vector in code block if available, otherwise score
+                cvss_display = "N/A"
+                if v.cvss_vector:
+                    cvss_display = f"`{v.cvss_vector}`"
+                elif v.cvss_score:
+                    cvss_display = str(v.cvss_score)
+                
+                # Format EPSS score
+                epss_display = f"{v.epss_score:.2%}" if v.epss_score else "N/A"
+                
+                f.write(f"| {v.target} | {v.target_name or 'N/A'} | {cve_id_display} | {package_display} | {v.version} | {v.severity.value} | {cvss_display} | {epss_display} | {status} | {v.fix_version or 'N/A'} | {comment} | {desc} | {additional_info} |\n")
     
     def _format_id_with_link(self, cve_id: str) -> str:
         """Format CVE/GHSA ID with appropriate link."""
@@ -141,7 +153,7 @@ class ReportGenerator:
         if dir_path:
             os.makedirs(dir_path, exist_ok=True)
             
-        fieldnames = ['target', 'target_name', 'cve_id', 'link', 'package_name', 'package_link', 'version', 'severity', 'status', 'fix_version', 'cvss_score', 'user_comment', 'description', 'additional_info']
+        fieldnames = ['target', 'target_name', 'cve_id', 'link', 'package_name', 'package_link', 'version', 'severity', 'cvss_score', 'cvss_vector', 'epss_score', 'status', 'fix_version', 'user_comment', 'description', 'additional_info']
         with open(output_path, 'w', newline='') as f:
             writer = csv.DictWriter(f, fieldnames=fieldnames)
             writer.writeheader()
@@ -155,6 +167,11 @@ class ReportGenerator:
                 # Generate link for package
                 package_link = self._get_package_link(v.package_name, v.version, v.ecosystem)
                 
+                # Sanitize text fields to prevent issues
+                description = (v.description or "").replace('\n', ' ').replace('\r', ' ')
+                user_comment = (issue.user_comment or "").replace('\n', ' ').replace('\r', ' ')
+                additional_info = (issue.additional_info or "").replace('\n', ' ').replace('\r', ' ')
+                
                 writer.writerow({
                     'target': v.target,
                     'target_name': v.target_name or '',
@@ -164,12 +181,14 @@ class ReportGenerator:
                     'package_link': package_link,
                     'version': v.version,
                     'severity': v.severity.value,
+                    'cvss_score': v.cvss_score,
+                    'cvss_vector': v.cvss_vector or '',
+                    'epss_score': v.epss_score,
                     'status': status,
                     'fix_version': v.fix_version,
-                    'cvss_score': v.cvss_score,
-                    'user_comment': issue.user_comment or '',
-                    'description': v.description,
-                    'additional_info': issue.additional_info or ''
+                    'user_comment': user_comment,
+                    'description': description,
+                    'additional_info': additional_info
                 })
     
     def _get_id_link(self, cve_id: str) -> str:
