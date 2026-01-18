@@ -39,6 +39,14 @@ inputs:
     description: 'Comma-separated list of enrichment sources to apply (e.g., "cisa"). Use "none" to disable enrichment. Default: none'
     required: false
     default: 'none'
+  log-level:
+    description: 'Logging level (DEBUG, INFO, WARNING, ERROR, CRITICAL). Default: WARNING. Use DEBUG for troubleshooting.'
+    required: false
+    default: 'WARNING'
+  git-force-push:
+    description: 'Force push to remote repository (use with caution). Set to "true" to enable.'
+    required: false
+    default: 'false'
   extra-args:
     description: 'Additional raw CLI arguments'
     required: false
