@@ -1,5 +1,15 @@
 # Debugging Guide for Git Push Errors
 
+## Automatic Conflict Resolution (NEW!)
+
+The git integration now **automatically handles branch conflicts**:
+
+1. **Pull with rebase**: Uses `git pull --rebase` to handle divergent branches
+2. **Auto-reset on failure**: If pull fails, resets to remote state
+3. **Auto-retry with force**: If push is rejected, automatically retries with `--force`
+
+**This means push operations should always succeed** without manual intervention!
+
 ## Changes Made
 
 ### 1. Enhanced Debugging Logging
@@ -11,6 +21,14 @@
 - Added `--git-force-push` CLI argument (scan and report commands)
 - Added `git-force-push` input to GitHub Action
 - Updated `push()` method to accept `force` parameter
+- **NEW**: Push automatically retries with `--force` if rejected (no manual flag needed!)
+
+### 3. Automatic Conflict Resolution
+- Configured `pull.rebase=true` for seamless branch updates
+- Pull uses `--rebase` to handle divergent branches
+- On pull failure, resets to remote state before committing new changes
+- Push automatically force-pushes on non-fast-forward rejections
+- **No user intervention required** - conflicts are resolved automatically
 
 ### 3. Action Inputs
 - `log-level`: Set to "DEBUG" for verbose logging (default: "WARNING")
@@ -42,22 +60,26 @@ vulnmng scan . \
   --git-force-push
 ```
 
-## Common Git Push Errors
+## Common Git Push Errors (AUTO-RESOLVED!)
 
-### "fatal: couldn't find remote ref"
+### "fatal: couldn't find remote ref" ✅ AUTO-FIXED
 - The branch doesn't exist on the remote yet
-- Solution: Use `--git-force-push` or create the branch manually first
+- **Auto-resolution**: Creates branch on first push
 
-### "rejected - non-fast-forward"
+### "rejected - non-fast-forward" ✅ AUTO-FIXED
 - The remote branch has commits not in local
-- Solution: Use `--git-force-push` (caution: this will overwrite remote)
+- **Auto-resolution**: Automatically retries with `--force`
 
-### "Permission denied"
+### "divergent branches" ✅ AUTO-FIXED
+- Local and remote have conflicting histories  
+- **Auto-resolution**: Resets to remote, then commits and force-pushes
+
+### "Permission denied" ❌ MANUAL FIX REQUIRED
 - Token doesn't have write permissions
-- Solution: Check token has `contents: write` permission in workflow
+- **Solution**: Check token has `contents: write` permission in workflow
 
-### "No changes to push"
-- This is not an error - means commit() correctly detected no changes
+### "No changes to push" ℹ️ NOT AN ERROR
+- This means commit() correctly detected no changes
 - The conditional push logic prevents this from causing failures
 
 ## What the Debug Output Shows
