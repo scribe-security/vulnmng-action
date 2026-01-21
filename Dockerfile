@@ -1,6 +1,6 @@
 # ARG can be overridden during sync to match the version tag
 ARG VULNMNG_VERSION=latest
-FROM ghcr.io/scribe-security/vulnmng:${VULNMNG_VERSION}
+FROM ghcr.io/scribe-security/vulnmng:latest
 
 # The base image already contains the vulnmng CLI and its dependencies.
 # We only need to add the action-specific entrypoint script.
