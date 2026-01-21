@@ -4,7 +4,7 @@ import sys
 import logging
 from typing import List
 from datetime import datetime
-from vulnmng.core.models import Issue, VulnerabilityStatus, ScanMetadata
+from vulnmng.core.models import Issue, VulnerabilityStatus, ScanMetadata, Severity
 
 logger = logging.getLogger(__name__)
 
@@ -42,12 +42,49 @@ class ReportGenerator:
             # Summary
             total = len(self.issues)
             by_status = {}
+            high_critical_total = 0
+            high_critical_relevant = 0
+            
+            # Per-target statistics
+            by_target = {}  # target -> {total: int, hc_relevant: int, hc_total: int}
+            
             for i in self.issues:
                 status = self._get_status_from_labels(i.labels)
                 by_status[status] = by_status.get(status, 0) + 1
+                
+                # Count High and Critical severity issues
+                if i.vulnerability.severity in [Severity.HIGH, Severity.CRITICAL]:
+                    high_critical_total += 1
+                    # Count relevant (new, triage) H+C issues
+                    if status in ["status:new", "status:triage"]:
+                        high_critical_relevant += 1
+                
+                # Per-target statistics
+                target = i.vulnerability.target
+                if target not in by_target:
+                    by_target[target] = {'total': 0, 'hc_relevant': 0, 'hc_total': 0}
+                
+                by_target[target]['total'] += 1
+                if i.vulnerability.severity in [Severity.HIGH, Severity.CRITICAL]:
+                    by_target[target]['hc_total'] += 1
+                    if status in ["status:new", "status:triage"]:
+                        by_target[target]['hc_relevant'] += 1
             
             f.write("## Summary\n")
-            f.write(f"- Total Issues: {total}\n")
+            f.write(f"- Total Vulnerabilities: {total}\n")
+            f.write(f"- High+Critical (relevant/total): {high_critical_relevant}/{high_critical_total}\n")
+            f.write("\n")
+            
+            # Per-target summary table
+            if by_target:
+                f.write("**Per Target:**\n\n")
+                f.write("| Target | H+C Relevant/Total | Total Vulnerabilities |\n")
+                f.write("|---|---|---|\n")
+                for target, stats in sorted(by_target.items()):
+                    f.write(f"| {target} | {stats['hc_relevant']}/{stats['hc_total']} | {stats['total']} |\n")
+                f.write("\n")
+            
+            f.write("**By Status:**\n")
             for status, count in sorted(by_status.items()):
                 f.write(f"- {status}: {count}\n")
             f.write("\n")
